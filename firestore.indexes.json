@@ -1,0 +1,14 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "questions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "live", "order": "ASCENDING" },
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

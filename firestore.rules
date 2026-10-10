@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// ============================================================================
+// Friendship Quiz — Cloud Firestore Security Rules
+// ----------------------------------------------------------------------------
+// Enforcement summary:
+//   * Anonymous/public users may READ only live & enabled quiz questions.
+//   * Anonymous/public users may CREATE an attempt + its answers (validated),
+//     but can never read/update/delete attempts or answers.
+//   * Only authenticated administrators (a doc exists at admins/{uid}) may
+//     manage questions, read responses, and change admin settings.
+//   * Every write is validated for shape/length to block malformed payloads.
+// ============================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers ----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function validStr(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+    function validOptions(o) {
+      return o is map
+        && o.keys().hasOnly(['A', 'B', 'C', 'D'])
+        && validStr(o.A, 1, 160)
+        && validStr(o.B, 1, 160)
+        && validStr(o.C, 1, 160)
+        && validStr(o.D, 1, 160);
+    }
+
+    // ---- administrators ----
+    // Bootstrap the FIRST admin manually (console / scripts/setup-admin.js).
+    // After that, existing admins can manage admins. A user can only read
+    // their own admin document.
+    match /admins/{uid} {
+      allow read:   if isSignedIn() && request.auth.uid == uid;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false; // never delete the admin record through the client
+    }
+
+    // ---- quiz questions ----
+    // Public reads: only live AND enabled questions.
+    // Admin gets full read/write. Draft/disabled docs stay invisible to users.
+    match /questions/{qid} {
+      allow read: if resource.data.live == true && resource.data.enabled == true;
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin()
+        && (!('text' in request.resource.data) || validStr(request.resource.data.text, 1, 300))
+        && (!('options' in request.resource.data) || validOptions(request.resource.data.options));
+    }
+
+    // ---- public config (e.g. publish metadata) ----
+    match /config/{docId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- attempts + answers (private to admin, creatable by the public) ----
+    match /attempts/{attemptId} {
+      // Prevent duplicate submissions: the attempt id must not already exist.
+      allow create: if validStr(request.resource.data.name, 2, 40)
+        && validStr(request.resource.data.attemptId, 6, 80)
+        && request.resource.data.attemptId == attemptId
+        && request.resource.data.status == 'completed'
+        && request.resource.data.totalQuestions is int
+        && request.resource.data.totalQuestions > 0
+        && request.resource.data.totalQuestions <= 100
+        && request.resource.data.createdAt == request.time
+        && !exists(/databases/$(database)/documents/attempts/$(attemptId));
+
+      // Responses are PRIVATE — read/update/delete for admins only.
+      allow read, update, delete: if isAdmin();
+
+      match /answers/{answerId} {
+        allow create: if validStr(request.resource.data.questionId, 1, 80)
+          && validStr(request.resource.data.questionText, 1, 300)
+          && request.resource.data.questionId == answerId
+          && request.resource.data.optionLetter in ['A', 'B', 'C', 'D']
+          && validStr(request.resource.data.optionText, 1, 160);
+        allow read, update, delete: if isAdmin();
+      }
+    }
+
+    // Deny anything not explicitly matched.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
