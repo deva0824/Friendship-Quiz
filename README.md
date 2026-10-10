@@ -2,8 +2,12 @@
 
 A premium, animated, dark-themed **Friendship Quiz** website with a secure
 **Admin Panel** and a **User Quiz System**. Built with pure HTML/CSS/JavaScript
-(one `index.html`) plus Firebase Auth + Cloud Firestore for secure, persistent,
-cross-device storage.
+(one `index.html`) plus a choice of backends:
+
+- 🖥️ **Node server** (`server.js`, zero dependencies) — questions the admin edits
+  are saved to disk and shown to **every visitor**. Best for hosting on your own box.
+- 🔥 **Firebase Auth + Cloud Firestore** — managed, secure, real-time, cross-device.
+- 🧪 **Demo mode** (localStorage) — instant, single-browser trial of the UI.
 
 > **How well do your friends know you?**
 > Users answer the admin's questions; the admin privately sees every participant,
@@ -33,9 +37,16 @@ cross-device storage.
 ```
 friendship-quiz/
 ├── index.html               # The entire frontend (SPA): user + admin
-├── firestore.rules          # Cloud Firestore security rules (permissions)
-├── firestore.indexes.json   # Required composite index
-├── firebase.json            # Hosting + Firestore deploy config
+├── server.js                # Zero-dependency Node server (static + JSON API + storage)
+├── package.json             # npm start -> node server.js
+├── data/                    # Auto-created by server.js on first run (your content)
+│   ├── questions.json       #   questions (shared with every visitor)
+│   ├── attempts.json        #   participants' responses (private)
+│   ├── admin.json           #   admin username + hashed password
+│   └── secret.txt           #   session signing secret (auto-generated)
+├── firestore.rules          # Cloud Firestore security rules (Firebase mode)
+├── firestore.indexes.json   # Required composite index (Firebase mode)
+├── firebase.json            # Hosting + Firestore deploy config (Firebase mode)
 ├── tools/
 │   ├── package.json
 │   └── setup-admin.js       # One-time admin bootstrap (Firebase Admin SDK)
@@ -46,17 +57,37 @@ friendship-quiz/
 
 ## ⚡ What works immediately vs. what needs configuration
 
-The app has **two modes**:
+The app auto-detects its backend at load time: it first looks for the **Node
+server**, then Firebase (if configured), otherwise falls back to **Demo** mode.
+Add `?demo=1` to any URL to force demo mode.
 
-### 1. Demo mode (works instantly, no setup) — INSECURE
-Open `index.html` in a browser (or `?demo=1`). Uses `localStorage`.
+### 1. Node server mode (recommended for a self-hosted site)
+Run the included server and share one URL with everyone:
+
+```bash
+cd friendship-quiz
+node server.js          # or: npm start
+# open http://localhost:3000
+```
+
+- ✅ Questions you create/publish in the admin panel are written to
+  `data/questions.json` and served to **all** visitors.
+- ✅ Participants' responses are stored privately in `data/attempts.json` and only
+  visible after admin login.
+- ✅ Credentials are hashed (scrypt) and sessions are signed `httpOnly` cookies.
+- Default login: **admin / 1234** (you'll be forced to change it in-app).
+- Configure with env vars: `PORT` (default `3000`), `ADMIN_USERNAME`,
+  `ADMIN_PASSWORD`, `SESSION_SECRET`, and `HTTPS=1` behind a TLS proxy.
+
+### 2. Demo mode (works instantly, no setup) — INSECURE
+Open `index.html` in a browser (or add `?demo=1`). Uses `localStorage`.
 
 - ✅ Every feature works: quiz, all 10 pages, admin dashboard, responses, CSV export, settings.
 - Default login: **admin / 1234** (you'll be forced to change it in-app).
 - ⚠️ **Data lives only in one browser.** Credentials are *not* securely protected,
   and responses are **not** shared across devices. This is for trying the UI only.
 
-### 2. Firebase mode (real, secure, cross-device) — REQUIRES CONFIGURATION
+### 3. Firebase mode (real, secure, cross-device) — REQUIRES CONFIGURATION
 Fill in `FIREBASE_CONFIG` in `index.html` and run the setup steps below.
 Then credentials are protected by Firebase Auth and all reads/writes are
 enforced by `firestore.rules` on the server. **Use this for a real website.**
@@ -127,6 +158,15 @@ Your site is now live at `https://your-project.web.app`.
 
 ## 🧑‍💻 Run locally
 
+### Option A — Node server (shares questions across devices)
+```bash
+cd friendship-quiz
+node server.js            # serves http://localhost:3000
+```
+Open <http://localhost:3000>. The badge at the bottom shows
+“Node server active”.
+
+### Option B — Static file server (demo / Firebase mode)
 Because the app uses ES module imports, serve it over HTTP (not `file://`):
 
 ```bash
@@ -235,6 +275,54 @@ Everyone else is denied by the catch-all rule at the bottom of the file.
 
 ---
 
+## 🖥️ Node server mode (`server.js`)
+
+A single zero-dependency Node file that serves the SPA and a small JSON API, and
+persists everything to disk under `data/`.
+
+```bash
+node server.js                 # http://localhost:3000
+PORT=8080 node server.js       # custom port
+ADMIN_USERNAME=boss ADMIN_PASSWORD=Secret123 node server.js
+```
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `PORT` | `3000` | HTTP port |
+| `ADMIN_USERNAME` | `admin` | Seeds the first admin (only if no `data/admin.json`) |
+| `ADMIN_PASSWORD` | `1234` | Seeds the first admin password |
+| `SESSION_SECRET` | auto | Secret used to sign session cookies |
+| `HTTPS=1` | off | Sets `Secure` cookies (use behind a TLS proxy such as nginx/Caddy) |
+
+**API surface**
+
+| Method + path | Auth | Purpose |
+|---|---|---|
+| `GET /api/config` | – | Reports `{ "mode": "api" }` so the frontend auto-selects this backend |
+| `GET /api/questions` | – | Public, **live + enabled** questions only |
+| `POST /api/attempts` | – | Submit a participant's answers (validated, deduped) |
+| `POST /api/admin/login` / `logout` | – | Create / destroy a session |
+| `GET /api/admin/session` | admin | Current admin, or `401` |
+| `GET/POST /api/admin/questions` | admin | List / create |
+| `PUT /api/admin/questions/:id` | admin | Edit (sets draft) |
+| `DELETE /api/admin/questions/:id` | admin | Delete |
+| `POST /api/admin/questions/:id/toggle` | admin | Enable/disable |
+| `POST /api/admin/questions/:id/move` | admin | Reorder up/down |
+| `POST /api/admin/publish` | admin | Publish all drafts (live = enabled) |
+| `GET /api/admin/attempts` | admin | All participant responses |
+| `DELETE /api/admin/attempts/:id` | admin | Delete a response |
+| `POST /api/admin/credentials` | admin | Change username/password (current password required) |
+
+**Security:** passwords are hashed with **scrypt** (salted, `timingSafeEqual`
+comparison); sessions are **HMAC-signed `httpOnly` cookies** (`SameSite=Lax`);
+public endpoints never expose responses or non-live questions. Back up the
+`data/` folder; deleting it resets the site.
+
+> ⚠️ `data/` is **not** deployed to Firebase Hosting (it is in `firebase.json`'s
+> `ignore` list) — run `server.js` on your own host when using this mode.
+
+---
+
 ## 🧾 Pages / views delivered
 
 1. Home · 2. Name Entry · 3. Quiz · 4. Completion · 5. Admin Login ·
@@ -250,13 +338,26 @@ Everyone else is denied by the catch-all rule at the bottom of the file.
 | "The query requires an index" | Run `firebase deploy --only firestore:indexes`, or click the link in the console error. |
 | Can't log in as admin (Firebase) | Re-run `tools/setup-admin.js`; ensure the `admins/{uid}` doc exists. |
 | Users see no questions | In **Manage Questions**, click **Publish Updates** (drafts are hidden). |
-| `file://` refuses to run | Serve over HTTP (`python3 -m http.server`). |
+| `file://` refuses to run | Serve over HTTP (`python3 -m http.server`, or `node server.js`). |
 | Want pure demo | Open the site with `?demo=1`. |
+| Admin edits vanish / not shared | You're in **demo mode** (browser-only). Run `node server.js` and open that URL instead. |
 
 ---
 
 ## 📦 Deploying elsewhere
 
+### Static host (demo / Firebase mode)
 Any static host works (Netlify, Vercel, GitHub Pages, Cloudflare Pages, Firebase
-Hosting). Just upload `index.html` (Firebase mode requires the config from step 2).
+Hosting). Upload `index.html` (Firebase mode requires the config from step 2).
 Firestore, Auth and the security rules remain on Firebase.
+
+### Node host (Node server mode)
+Any Node-capable host or VPS (Render, Railway, Fly.io, a plain server, Docker…):
+
+```bash
+node server.js
+```
+
+Persist the `data/` directory (mount a volume / disk) so questions and responses
+survive restarts, and set `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `SESSION_SECRET`
+via environment variables. Put it behind HTTPS and start with `HTTPS=1`.

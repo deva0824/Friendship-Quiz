@@ -7,6 +7,10 @@
       "**/node_modules/**",
       "functions/**",
       "scripts/**",
+      "tools/**",
+      "data/**",
+      "server.js",
+      "package.json",
       "README.md",
       "*.zip"
     ],

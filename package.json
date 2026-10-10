@@ -1,0 +1,12 @@
+{
+  "name": "friendship-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dark animated Friendship Quiz with a private admin panel and shared question storage.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
