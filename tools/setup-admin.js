@@ -58,6 +58,23 @@ const SEED_DATA = [
   { text: "Where did we first meet?", options: { A: "College", B: "A party", C: "Online", D: "Work" } }
 ];
 
+// If a questions.json exists at the project root, use it as the permanent
+// default question set (exported from the admin's "Export Questions" button).
+const SEED_PATH = path.join(__dirname, "..", "questions.json");
+(function loadSeed() {
+  if (!fs.existsSync(SEED_PATH)) return;
+  try {
+    const json = JSON.parse(fs.readFileSync(SEED_PATH, "utf8"));
+    if (Array.isArray(json) && json.length) {
+      SEED_DATA.length = 0;
+      json.filter((q) => q && q.text && q.options).forEach((q) => SEED_DATA.push({ text: q.text, options: q.options }));
+      console.log(`• Using questions.json as the default question set (${SEED_DATA.length} questions)`);
+    }
+  } catch (err) {
+    console.warn("⚠ Could not parse questions.json — using built-in defaults.", err.message);
+  }
+})();
+
 (async () => {
   try {
     let user;

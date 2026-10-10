@@ -160,6 +160,22 @@ python3 -m http.server 5173
 2. Click **Preview Quiz** to check.
 3. Click **Publish Updates** → drafts turn **LIVE** and users see the changes.
 
+### Make your questions the permanent default set
+Your questions are saved in the app's database, but a brand-new deploy starts fresh.
+To pin *your* questions as the default that every new site/copy uses:
+
+1. **Admin → Manage Questions → Export Questions** → downloads a `questions.json`
+   file containing your exact questions.
+2. Save `questions.json` into the **project root** (next to `index.html`).
+3. That's it — from now on:
+   - **Demo mode** seeds these questions on first run (instead of the built-in 5),
+   - **`tools/setup-admin.js`** seeds these exact questions into Firestore
+     (marked live) instead of its 3 placeholders.
+
+`questions.json` is bundled with the site when you `firebase deploy`, so hosting
+always ships your question set. The file is only read on first setup; existing
+databases keep their current questions.
+
 ---
 
 ## 🗄️ Data model (Cloud Firestore)

@@ -741,7 +741,17 @@ class DemoBackend {
 
   async init() {
     if (!this._read("questions", null)) {
-      const qs = DEFAULT_QUESTIONS.map((q, i) => ({ id: "q" + (i + 1), text: q.text, options: q.options, order: i + 1, enabled: true, live: true, updatedAt: nowISO() }));
+      let seed = DEFAULT_QUESTIONS;
+      try {
+        const res = await fetch("questions.json", { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json) && json.length) seed = json;
+        }
+      } catch (e) { /* no questions.json -> use built-in defaults */ }
+      const qs = seed
+        .filter((q) => q && q.text && q.options)
+        .map((q, i) => ({ id: "q" + (i + 1), text: q.text, options: q.options, order: i + 1, enabled: q.enabled !== false, live: true, updatedAt: nowISO() }));
       this._write("questions", qs);
     }
     if (!this._read("admin", null)) {
@@ -1279,6 +1289,7 @@ async function AdminQuestions() {
       <div class="toolbar">
         <button class="btn" id="addQ">+ New Question</button>
         <button class="btn ghost" id="previewQ">Preview Quiz</button>
+        <button class="btn ghost" id="exportQ" title="Download your questions as the permanent default set (questions.json)">Export Questions</button>
         <span class="spacer" style="flex:1"></span>
         <button class="btn" id="publishQ">Publish Updates</button>
       </div>
@@ -1291,6 +1302,7 @@ async function AdminQuestions() {
 
     $("#addQ", body).addEventListener("click", () => questionModal(null, load));
     $("#previewQ", body).addEventListener("click", () => previewModal(qs));
+    $("#exportQ", body).addEventListener("click", () => exportQuestions(qs));
     $("#publishQ", body).addEventListener("click", async () => {
       ui.loading(true, "Publishing…");
       try { await backend.publishAll(); ui.loading(false); ui.toast("ok", "Published", "Users will now see the latest questions."); load(); }
@@ -1368,6 +1380,23 @@ function previewModal(qs) {
         <div class="opts">${["A", "B", "C", "D"].map((L) => `<span><b>${L}</b> · ${esc(q.options[L] || "—")}</span>`).join("")}</div></div>`).join("")
     : "<p class='hint'>No enabled questions to preview.</p>";
   ui.modal({ title: "Quiz Preview (" + live.length + " questions)", body, actions: [{ label: "Close", cls: "ghost" }] });
+}
+
+function exportQuestions(qs) {
+  const data = qs.map((q) => ({ text: q.text, options: q.options, enabled: q.enabled }));
+  const json = JSON.stringify(data, null, 2);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  a.download = "questions.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  ui.toast("ok", "Exported", `questions.json saved with ${data.length} questions.`);
+  ui.modal({
+    title: "Permanent default questions",
+    body: `<p style="color:var(--muted)">This file is now your default question set. Save it into the project root (next to <code>index.html</code>) as <code>questions.json</code>. Every fresh demo site and the Firebase admin bootstrap will seed exactly these questions.</p>
+      <div class="hint" id="seedInfo">${data.length} question${data.length > 1 ? "s" : ""} exported.</div>`,
+    actions: [{ label: "Close", cls: "ghost" }]
+  });
 }
 
 /* ================================================================
