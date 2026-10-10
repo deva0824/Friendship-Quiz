@@ -1,0 +1,13 @@
+{
+  "name": "friendship-quiz-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-time admin bootstrap tool for the Friendship Quiz (Firebase Admin SDK).",
+  "type": "commonjs",
+  "scripts": {
+    "bootstrap": "node setup-admin.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.3.1"
+  }
+}

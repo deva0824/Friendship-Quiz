@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#05060f" />
+<meta name="description" content="Friendship Quiz - How well do your friends know you? A dark, animated friendship quiz with a private admin dashboard." />
+<title>Friendship Quiz</title>
+<style>
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+:root{
+  --bg-0:#05060f;
+  --bg-1:#080b1c;
+  --bg-2:#0d1130;
+  --navy:#0a0f2c;
+  --panel:rgba(18,22,48,.55);
+  --panel-solid:#111633;
+  --stroke:rgba(140,150,255,.16);
+  --stroke-strong:rgba(150,120,255,.45);
+  --text:#eef0ff;
+  --muted:#9aa0c8;
+  --purple:#8b5cf6;
+  --violet:#a855f7;
+  --blue:#3b82f6;
+  --cyan:#22d3ee;
+  --pink:#ec4899;
+  --green:#34d399;
+  --red:#f87171;
+  --amber:#fbbf24;
+  --grad:linear-gradient(120deg,#8b5cf6 0%,#3b82f6 45%,#ec4899 100%);
+  --grad-soft:linear-gradient(120deg,rgba(139,92,246,.25),rgba(34,211,238,.18),rgba(236,72,153,.22));
+  --shadow:0 18px 50px -12px rgba(88,60,220,.55);
+  --radius:20px;
+  --radius-sm:13px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 800px at 15% -10%,rgba(139,92,246,.20),transparent 55%),
+    radial-gradient(1000px 700px at 110% 0%,rgba(34,211,238,.14),transparent 55%),
+    radial-gradient(900px 900px at 50% 130%,rgba(236,72,153,.16),transparent 55%),
+    linear-gradient(180deg,var(--bg-0),var(--bg-1) 45%,var(--bg-2));
+  background-attachment:fixed;
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+.glow-orb{
+  position:fixed;border-radius:50%;filter:blur(70px);opacity:.5;z-index:0;pointer-events:none;
+  animation:orbFloat 18s ease-in-out infinite;
+}
+.orb-a{width:340px;height:340px;background:#7c3aed;top:-80px;left:-60px}
+.orb-b{width:300px;height:300px;background:#06b6d4;bottom:-80px;right:-60px;animation-delay:-6s}
+.orb-c{width:260px;height:260px;background:#db2777;top:40%;right:20%;animation-delay:-11s;opacity:.35}
+@keyframes orbFloat{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(30px,-40px,0) scale(1.12)}}
+
+.app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+.wrap{width:min(1100px,92vw);margin-inline:auto}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{
+  position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(6,8,20,.85),rgba(6,8,20,.35));
+  border-bottom:1px solid var(--stroke);
+}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.logo{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;color:var(--text)}
+.logo-mark{
+  width:42px;height:42px;border-radius:13px;display:grid;place-items:center;position:relative;
+  background:var(--grad);box-shadow:0 0 22px rgba(139,92,246,.6);animation:logoPulse 4s ease-in-out infinite;
+}
+.logo-mark svg{width:24px;height:24px}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 18px rgba(139,92,246,.5)}50%{box-shadow:0 0 34px rgba(59,130,246,.85)}}
+.logo-text{font-weight:800;letter-spacing:.5px;font-size:1.05rem}
+.logo-text b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav-links{display:flex;align-items:center;gap:10px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;padding:8px 12px;border-radius:10px;transition:.25s}
+.nav-links a:hover{color:#fff;background:rgba(139,92,246,.16)}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  --b:var(--purple);
+  position:relative;border:0;cursor:pointer;color:#fff;font-weight:700;font-size:.95rem;
+  padding:13px 26px;border-radius:14px;background:var(--grad);background-size:200% 200%;
+  box-shadow:0 10px 30px -10px rgba(139,92,246,.9);
+  transition:transform .2s ease,box-shadow .3s ease,background-position .9s ease,opacity .2s;
+  overflow:hidden;font-family:inherit;
+}
+.btn:hover{transform:translateY(-2px);background-position:100% 50%;box-shadow:0 16px 40px -12px rgba(236,72,153,.9)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.3)}
+.btn.ghost{background:rgba(255,255,255,.04);border:1px solid var(--stroke);box-shadow:none;color:var(--text)}
+.btn.ghost:hover{background:rgba(139,92,246,.16);border-color:var(--stroke-strong)}
+.btn.danger{background:linear-gradient(120deg,#ef4444,#ec4899)}
+.btn.sm{padding:9px 15px;font-size:.83rem;border-radius:11px}
+.btn.block{width:100%;display:block}
+.btn .ripple{position:absolute;border-radius:50%;transform:scale(0);background:rgba(255,255,255,.45);animation:rip .6s ease-out;pointer-events:none}
+@keyframes rip{to{transform:scale(3.2);opacity:0}}
+
+/* ============================================================
+   CARDS / GLASS
+   ============================================================ */
+.glass{
+  background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);
+  backdrop-filter:blur(16px);box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.glass::before{content:"";position:absolute;inset:0;background:var(--grad-soft);opacity:.35;pointer-events:none}
+.glass>*{position:relative;z-index:1}
+.pad{padding:clamp(20px,3.5vw,40px)}
+
+.view{animation:viewIn .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   HERO / HOME
+   ============================================================ */
+.hero{
+  flex:1;display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;
+  padding:clamp(28px,6vw,70px) 0;
+}
+.hero-title{
+  font-size:clamp(2.4rem,7vw,4.4rem);font-weight:900;line-height:1.02;margin:0 0 6px;
+  letter-spacing:-1px;
+}
+.hero-title .grad{
+  background:var(--grad);background-size:220% 220%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:gradShift 7s ease infinite;
+}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(1rem,2.4vw,1.3rem);color:var(--muted);margin:0 0 18px;font-weight:500}
+.hero-desc{color:var(--muted);max-width:52ch;margin:0 0 26px}
+/* teddy bear mascot */
+.teddy{position:relative;display:inline-block;width:clamp(88px,12vw,120px);margin:0 0 14px;animation:bearBounce 2.6s ease-in-out infinite}
+.teddy svg{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 16px 26px rgba(139,92,246,.45))}
+.bubble{position:absolute;top:-4px;right:-30px;z-index:3;white-space:nowrap;background:radial-gradient(circle at 28% 18%,#fff,#ece8ff);
+  color:#4c1d95;font-weight:800;font-size:.86rem;padding:8px 13px;border-radius:16px 16px 16px 5px;box-shadow:0 10px 26px rgba(0,0,0,.45);
+  animation:popHi .55s .8s both}
+.bubble::after{content:"";position:absolute;bottom:-7px;right:12px;border:7px solid transparent;border-top-color:#ece8ff;border-bottom-width:0}
+@keyframes popHi{from{opacity:0;transform:scale(.3) translateY(10px)}to{opacity:1;transform:scale(1)}}
+@keyframes bearBounce{0%,100%{transform:translateY(0)}42%{transform:translateY(-9px)}58%{transform:translateY(-8px)}}
+.bear-fur{fill:url(#bearGrad)}
+.bear-inner{fill:#cfbaff}
+.bear-muzzle{fill:#e4daff}
+.bear-nose{fill:#231849}
+.bear-eye{fill:#0e0e26}
+.bear-zear{transform-box:fill-box;transform-origin:50% 90%;animation:earWiggle 1.1s 1.4s ease-in-out 2}
+.bear-ze2{animation:earWiggle 1.1s 1.7s ease-in-out 2}
+@keyframes earWiggle{0%,100%{transform:rotate(0)}50%{transform:rotate(-16deg)}}
+.bear-zarm{transform-box:fill-box;transform-origin:16% 30%;animation:waveHi 1.5s .9s ease-in-out 3 both}
+@keyframes waveHi{0%{transform:rotate(6deg)}25%{transform:rotate(40deg)}45%{transform:rotate(2deg)}65%{transform:rotate(36deg)}85%{transform:rotate(12deg)}100%{transform:rotate(26deg)}}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;color:#cfd3ff;border:1px solid var(--stroke);
+  background:rgba(139,92,246,.12);padding:7px 13px;border-radius:999px;margin-bottom:18px;font-weight:600;letter-spacing:.4px}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 2s infinite}
+@keyframes blink{50%{opacity:.35}}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:7px;font-weight:600;letter-spacing:.3px}
+.input,select,textarea{
+  width:100%;padding:14px 15px;border-radius:13px;background:rgba(9,11,28,.75);color:var(--text);
+  border:1px solid var(--stroke);font-size:1rem;font-family:inherit;transition:.25s;outline:none;
+}
+.input:focus,select:focus,textarea:focus{border-color:var(--stroke-strong);box-shadow:0 0 0 4px rgba(139,92,246,.18)}
+textarea{resize:vertical;min-height:70px}
+.input.err{border-color:var(--red);box-shadow:0 0 0 4px rgba(248,113,113,.16);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.hint{font-size:.78rem;color:var(--muted);margin-top:7px}
+.hint.warn{color:var(--amber)}
+
+.hero-card{padding:26px;display:grid;gap:16px}
+.hero-card .attempt{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#b9c0ff;
+  background:rgba(9,11,28,.7);border:1px dashed var(--stroke-strong);border-radius:12px;padding:11px 13px;
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+}
+.attempt .copy{cursor:pointer;color:var(--cyan);font-size:.75rem;font-weight:700}
+
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:0 0 46px}
+.feature{padding:18px;border-radius:16px;border:1px solid var(--stroke);background:rgba(17,22,51,.5)}
+.feature h4{margin:10px 0 6px;font-size:.98rem}
+.feature p{margin:0;font-size:.85rem;color:var(--muted)}
+.feature .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--grad);box-shadow:0 0 18px rgba(139,92,246,.5)}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+.quiz-shell{max-width:760px;margin:clamp(20px,5vw,54px) auto;width:92vw}
+.progress-wrap{margin-bottom:22px}
+.progress-top{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:8px;font-weight:600}
+.progress-bar{height:11px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;border:1px solid var(--stroke)}
+.progress-fill{height:100%;width:0;border-radius:999px;background:var(--grad);background-size:200% 100%;
+  transition:width .6s cubic-bezier(.2,.8,.2,1);animation:gradShift 4s linear infinite;box-shadow:0 0 16px rgba(139,92,246,.7)}
+.q-card{animation:qIn .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes qIn{from{opacity:0;transform:translateX(38px) scale(.98)}to{opacity:1;transform:none}}
+.q-card.rev{animation:qRev .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes qRev{from{opacity:0;transform:translateX(-38px) scale(.98)}to{opacity:1;transform:none}}
+.q-num{font-size:.8rem;letter-spacing:2px;color:var(--purple);font-weight:800;text-transform:uppercase}
+.q-text{font-size:clamp(1.2rem,3.4vw,1.7rem);font-weight:800;margin:10px 0 22px;line-height:1.28}
+.options{display:grid;gap:12px}
+.option{
+  display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:15px;cursor:pointer;
+  border:1px solid var(--stroke);background:rgba(9,11,28,.6);transition:.25s;font-size:1rem;text-align:left;color:var(--text);
+  font-family:inherit;width:100%;position:relative;overflow:hidden;
+}
+.option:hover{border-color:var(--stroke-strong);transform:translateY(-2px);background:rgba(139,92,246,.12)}
+.option .letter{
+  flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;
+  background:rgba(139,92,246,.18);border:1px solid var(--stroke);transition:.25s;
+}
+.option.sel{border-color:transparent;background:linear-gradient(120deg,rgba(139,92,246,.35),rgba(236,72,153,.28));
+  box-shadow:0 0 0 2px rgba(139,92,246,.7),0 0 26px rgba(139,92,246,.55);animation:selPop .35s ease}
+.option.sel .letter{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 0 16px rgba(139,92,246,.8)}
+.option.missing{border-color:var(--amber);box-shadow:0 0 0 2px rgba(251,191,36,.4)}
+@keyframes selPop{0%{transform:scale(.97)}60%{transform:scale(1.015)}100%{transform:scale(1)}}
+.q-nav{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.q-nav .spacer{flex:1}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:18px;justify-content:center}
+.dot-item{width:27px;height:27px;border-radius:9px;border:1px solid var(--stroke);background:rgba(9,11,28,.6);
+  color:var(--muted);font-size:.72rem;font-weight:700;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.dot-item.answered{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.5);color:#a7f3d0}
+.dot-item.current{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(139,92,246,.7)}
+
+/* ============================================================
+   RESULT / COMPLETION
+   ============================================================ */
+.result-center{text-align:center;max-width:620px;margin:clamp(30px,7vw,80px) auto;width:92vw}
+.tick{
+  width:104px;height:104px;border-radius:50%;margin:0 auto 22px;display:grid;place-items:center;
+  background:radial-gradient(circle,rgba(52,211,153,.25),transparent 70%);border:2px solid var(--green);
+  box-shadow:0 0 40px rgba(52,211,153,.55);animation:pop .6s cubic-bezier(.2,1.4,.4,1)
+}
+.tick svg{width:52px;height:52px;stroke:var(--green)}
+.tick svg path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .7s .3s forwards ease}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.summary-list{display:grid;gap:10px;text-align:left;margin:22px 0}
+.summary-item{padding:14px 16px;border-radius:13px;border:1px solid var(--stroke);background:rgba(9,11,28,.55)}
+.summary-item .qn{font-size:.74rem;color:var(--purple);font-weight:800;letter-spacing:1px}
+.summary-item .qt{font-weight:700;margin:4px 0}
+.summary-item .ans{font-size:.9rem;color:var(--muted)}
+.summary-item .ans b{color:#e5e7ff}
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+.admin-grid{display:grid;grid-template-columns:238px 1fr;gap:22px;padding:24px 0 60px}
+.side{position:sticky;top:82px;align-self:start;padding:14px;display:grid;gap:6px}
+.side .who{padding:12px;border-radius:12px;background:rgba(139,92,246,.12);border:1px solid var(--stroke);margin-bottom:8px}
+.side .who .name{font-weight:800}
+.side .who .role{font-size:.72rem;color:var(--muted)}
+.side a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;text-decoration:none;color:var(--muted);
+  font-size:.9rem;font-weight:600;transition:.2s;cursor:pointer}
+.side a:hover{background:rgba(139,92,246,.14);color:#fff}
+.side a.active{background:var(--grad);color:#fff;box-shadow:0 10px 26px -12px rgba(139,92,246,.9)}
+.side a svg{width:18px;height:18px;flex:none}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.panel-head h2{margin:0;font-size:clamp(1.3rem,3vw,1.8rem)}
+.panel-head p{margin:6px 0 0;color:var(--muted);font-size:.9rem}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{padding:18px;border-radius:16px;border:1px solid var(--stroke);background:rgba(17,22,51,.55);position:relative;overflow:hidden;
+  animation:viewIn .5s both}
+.stat .k{font-size:.76rem;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.stat .v{font-size:2rem;font-weight:900;margin-top:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .ico{position:absolute;right:14px;top:14px;opacity:.4}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .input,.toolbar select{width:auto;min-width:150px;padding:11px 13px}
+.toolbar .grow{flex:1;min-width:180px}
+
+.qrow{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:15px;border:1px solid var(--stroke);
+  background:rgba(13,17,40,.6);margin-bottom:12px;transition:.25s;animation:viewIn .4s both}
+.qrow:hover{border-color:var(--stroke-strong)}
+.qrow.off{opacity:.55}
+.qrow .idx{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;background:rgba(139,92,246,.2)}
+.qrow .body{flex:1;min-width:0}
+.qrow .body h4{margin:0 0 8px;font-size:1rem;word-break:break-word}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts span{font-size:.76rem;color:var(--muted);border:1px solid var(--stroke);border-radius:8px;padding:4px 9px;background:rgba(9,11,28,.5)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.4px}
+.chip.live{background:rgba(52,211,153,.18);color:#a7f3d0;border:1px solid rgba(52,211,153,.4)}
+.chip.draft{background:rgba(251,191,36,.16);color:#fde68a;border:1px solid rgba(251,191,36,.4)}
+.chip.off{background:rgba(148,163,184,.15);color:#cbd5e1;border:1px solid rgba(148,163,184,.3)}
+.qrow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:230px}
+.icon-btn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;border:1px solid var(--stroke);
+  background:rgba(9,11,28,.6);cursor:pointer;color:var(--muted);transition:.2s}
+.icon-btn:hover{color:#fff;border-color:var(--stroke-strong);background:rgba(139,92,246,.16)}
+.icon-btn svg{width:16px;height:16px}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch .track{position:absolute;inset:0;border-radius:999px;background:rgba(148,163,184,.3);transition:.25s;cursor:pointer}
+.switch .track::before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.25s}
+.switch input:checked+.track{background:var(--grad)}
+.switch input:checked+.track::before{transform:translateX(20px)}
+
+/* tables */
+.table-wrap{overflow-x:auto;border-radius:15px;border:1px solid var(--stroke)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:13px 15px;text-align:left;font-size:.88rem;border-bottom:1px solid var(--stroke)}
+th{background:rgba(139,92,246,.12);color:#cfd3ff;font-weight:700;font-size:.76rem;letter-spacing:.6px;text-transform:uppercase;position:sticky;top:0}
+tbody tr{transition:.2s;cursor:pointer}
+tbody tr:hover{background:rgba(139,92,246,.10)}
+tbody tr:last-child td{border-bottom:0}
+.pname{color:var(--cyan);font-weight:700}
+.sel-col{width:46px;text-align:center}
+.check{
+  appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:6px;
+  border:2px solid var(--stroke-strong);background:rgba(9,11,28,.75);cursor:pointer;
+  transition:.2s;display:inline-grid;place-items:center;vertical-align:middle;
+}
+.check:hover{border-color:var(--purple);box-shadow:0 0 10px rgba(139,92,246,.5)}
+.check:checked{background:var(--grad);border-color:transparent;animation:checkPop .35s cubic-bezier(.2,1.4,.4,1);box-shadow:0 0 14px rgba(139,92,246,.8)}
+.check:checked::after{content:"✓";color:#fff;font-size:13px;font-weight:900;line-height:1}
+@keyframes checkPop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+tbody tr{transition:background .3s ease,transform .3s ease,box-shadow .3s ease}
+tbody tr.sel-row{background:linear-gradient(120deg,rgba(139,92,246,.24),rgba(236,72,153,.18));animation:selPulse 1.8s ease-in-out infinite;border-left:3px solid var(--purple)}
+@keyframes selPulse{0%,100%{box-shadow:inset 0 0 0 0 rgba(139,92,246,.0)}50%{box-shadow:inset 0 0 24px 0 rgba(139,92,246,.3)}}
+tr.row-removing{animation:rowOut .5s cubic-bezier(.55,0,.7,.4) forwards;pointer-events:none}
+@keyframes rowOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-38px);padding:2px 0;border-width:0}}
+.btn.active{background:linear-gradient(120deg,#22d3ee,#3b82f6);box-shadow:0 10px 32px -10px rgba(59,130,246,.9)}
+.num-chip{display:inline-grid;place-items:center;min-width:25px;height:25px;border-radius:13px;background:var(--grad);color:#fff;
+  font-weight:900;font-size:.8rem;padding:0 9px;box-shadow:0 0 16px rgba(236,72,153,.6);animation:checkPop .35s cubic-bezier(.2,1.4,.4,1)}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty svg{width:46px;height:46px;opacity:.5;margin-bottom:12px}
+
+.answer-block{padding:15px 17px;border-radius:14px;border:1px solid var(--stroke);background:rgba(9,11,28,.55);margin-bottom:12px}
+.answer-block .qn{font-size:.72rem;color:var(--purple);font-weight:800;letter-spacing:1px}
+.answer-block .qt{font-weight:700;margin:5px 0 10px}
+.answer-block .sel{display:flex;align-items:center;gap:10px}
+.answer-block .sel .l{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:var(--grad)}
+.bar-row{display:grid;grid-template-columns:120px 1fr 46px;gap:10px;align-items:center;margin-bottom:8px;font-size:.84rem}
+.bar-track{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar-fill{height:100%;background:var(--grad);border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+
+/* ============================================================
+   TOAST / MODAL / LOADER
+   ============================================================ */
+#toasts{position:fixed;top:16px;right:16px;z-index:120;display:flex;flex-direction:column;gap:10px;max-width:min(360px,88vw)}
+.toast{display:flex;gap:11px;align-items:flex-start;padding:14px 16px;border-radius:14px;border:1px solid var(--stroke);
+  background:rgba(14,18,42,.94);backdrop-filter:blur(12px);box-shadow:var(--shadow);animation:toastIn .4s cubic-bezier(.2,1,.3,1)}
+.toast.out{animation:toastOut .35s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(40px)}}
+.toast .ti{width:26px;height:26px;flex:none;border-radius:8px;display:grid;place-items:center;font-weight:900}
+.toast.ok .ti{background:rgba(52,211,153,.2);color:var(--green)}
+.toast.err .ti{background:rgba(248,113,113,.2);color:var(--red)}
+.toast.info .ti{background:rgba(59,130,246,.2);color:var(--cyan)}
+.toast .tt{font-weight:800;font-size:.9rem}
+.toast .tm{font-size:.82rem;color:var(--muted)}
+
+.overlay{position:fixed;inset:0;z-index:110;background:rgba(3,4,12,.72);backdrop-filter:blur(6px);display:grid;place-items:center;padding:18px;
+  animation:fade .3s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:min(620px,94vw);max-height:88vh;overflow:auto;animation:modalIn .4s cubic-bezier(.2,1,.3,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
+.modal h3{margin:0 0 6px}
+.modal .modal-acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+#loader{position:fixed;inset:0;z-index:200;display:none;place-items:center;background:rgba(3,4,12,.78);backdrop-filter:blur(8px)}
+#loader.on{display:grid}
+.spinner{width:64px;height:64px;border-radius:50%;border:4px solid rgba(139,92,246,.2);border-top-color:var(--purple);
+  border-right-color:var(--pink);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{margin-top:16px;color:var(--muted);font-size:.88rem;letter-spacing:.5px;text-align:center}
+
+.badge-id{font-family:ui-monospace,monospace;font-size:.74rem;color:var(--muted)}
+.section-title{font-size:.78rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:800;margin:26px 0 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:880px){
+  .hero{grid-template-columns:1fr;text-align:left;gap:24px}
+  .feature-grid{grid-template-columns:1fr}
+  .admin-grid{grid-template-columns:1fr;gap:14px}
+  .side{position:static;display:flex;overflow-x:auto;gap:6px;padding:10px}
+  .side .who{display:none}
+  .side a{white-space:nowrap}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .nav-links a{padding:7px 9px;font-size:.82rem}
+  .grid2{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:90px 1fr 40px}
+  .btn{padding:12px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .glow-orb{display:none}
+  #particles{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="glow-orb orb-a"></div>
+<div class="glow-orb orb-b"></div>
+<div class="glow-orb orb-c"></div>
+
+<div class="app">
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <a class="logo" href="#/" id="logoLink">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+          </svg>
+        </span>
+        <span class="logo-text">FRIENDSHIP<b>QUIZ</b></span>
+      </a>
+      <div class="nav-links">
+        <a href="#/" data-nav>Home</a>
+        <a href="#/admin" data-nav>Admin</a>
+      </div>
+    </div>
+  </nav>
+  <main id="view" class="wrap" style="flex:1;display:flex;flex-direction:column"></main>
+  <footer style="position:relative;z-index:2;text-align:center;color:var(--muted);font-size:.78rem;padding:22px 0 34px">
+    <span id="backendBadge"></span>
+  </footer>
+</div>
+
+<div id="toasts"></div>
+<div id="modalRoot"></div>
+<div id="loader"><div style="text-align:center"><div class="spinner" style="margin:0 auto"></div><div class="loader-txt" id="loaderTxt">Loading…</div></div></div>
+
+<script type="module">
+/* ================================================================
+   FRIENDSHIP QUIZ
+   ----------------------------------------------------------------
+   Backend modes:
+     - "firebase" : Firebase Auth + Cloud Firestore (secure, real)
+     - "demo"     : localStorage (works instantly, INSECURE, offline)
+   Fill FIREBASE_CONFIG below to switch to firebase mode.
+   ================================================================ */
+
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+
+const EMAIL_DOMAIN = "friendshipquiz.app";
+const FIREBASE_VERSION = "10.12.2";
+
+/* ---------------- tiny helpers ---------------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const el = (tag, attrs = {}, html = "") => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "dataset") Object.assign(n.dataset, v);
+    else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  if (html) n.innerHTML = html;
+  return n;
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => "att_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+const nowISO = () => new Date().toISOString();
+const fmtDate = (d) => {
+  if (!d) return "—";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (isNaN(dt)) return "—";
+  return dt.toLocaleString(undefined, { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+};
+const debounce = (fn, ms = 220) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ---------------- UI primitives ---------------- */
+const ui = {
+  toast(kind, title, msg = "", ms = 3600) {
+    const map = { ok: "✓", err: "!", info: "i" };
+    const t = el("div", { class: `toast ${kind}` },
+      `<div class="ti">${map[kind] || "i"}</div><div><div class="tt">${esc(title)}</div>${msg ? `<div class="tm">${esc(msg)}</div>` : ""}</div>`);
+    $("#toasts").appendChild(t);
+    setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 350); }, ms);
+  },
+  loading(on, text = "Loading…") { $("#loaderTxt").textContent = text; $("#loader").classList.toggle("on", on); },
+  modal({ title, body, actions = [], onClose }) {
+    const root = $("#modalRoot");
+    const overlay = el("div", { class: "overlay" });
+    const actionsHtml = actions.map((a, i) => `<button class="btn ${a.cls || ""}" data-idx="${i}">${esc(a.label)}</button>`).join("");
+    const box = el("div", { class: "glass modal pad" }, `<h3>${esc(title)}</h3><div class="modal-body">${body}</div><div class="modal-acts">${actionsHtml}</div>`);
+    overlay.appendChild(box);
+    const close = () => { overlay.remove(); onClose && onClose(); };
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    box.querySelectorAll("[data-idx]").forEach((b) => b.addEventListener("click", async () => {
+      const a = actions[+b.dataset.idx];
+      if (!a.handler) return close();
+      const res = await a.handler(box);
+      if (res !== false) close();
+    }));
+    root.appendChild(overlay);
+    return { root: box, close };
+  },
+  confirm(title, msg, onYes, yesLabel = "Confirm") {
+    return ui.modal({ title, body: `<p style="color:var(--muted)">${esc(msg)}</p>`, actions: [
+      { label: "Cancel", cls: "ghost" },
+      { label: yesLabel, cls: "danger", handler: onYes }
+    ] });
+  }
+};
+
+/* ---------------- particles ---------------- */
+(function particles() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = $("#particles"); const ctx = c.getContext("2d");
+  let W, H, parts = [], raf;
+  function resize() { W = c.width = innerWidth; H = c.height = innerHeight; }
+  function make() {
+    const n = Math.min(90, Math.round((W * H) / 22000));
+    parts = Array.from({ length: n }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.8 + .4, s: Math.random() * .35 + .08,
+      a: Math.random() * .6 + .2, hue: [265, 220, 190, 320][Math.random() * 4 | 0]
+    }));
+  }
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      p.y -= p.s; if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue},90%,72%,${p.a})`;
+      ctx.shadowBlur = 8; ctx.shadowColor = `hsla(${p.hue},90%,65%,.8)`;
+      ctx.fill();
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  resize(); make(); tick();
+  addEventListener("resize", () => { resize(); make(); });
+})();
+
+/* ================================================================
+   BACKENDS
+   ================================================================ */
+const DEFAULT_QUESTIONS = [
+  { text: "Who is your best friend?", options: { A: "My school friend", B: "My college friend", C: "My neighbour", D: "My cousin" } },
+  { text: "What is my favourite colour?", options: { A: "Blue", B: "Green", C: "Red", D: "Black" } },
+  { text: "Where did we first meet?", options: { A: "College", B: "A party", C: "Online", D: "Work" } },
+  { text: "What do we argue about most?", options: { A: "Food", B: "Movies", C: "Music", D: "Nothing" } },
+  { text: "What is my dream trip?", options: { A: "Beach", B: "Mountains", C: "City", D: "Space" } }
+];
+
+function normalizeQuestion(doc) {
+  const o = doc.options || {};
+  return {
+    id: doc.id, text: doc.text || "",
+    options: { A: o.A || "", B: o.B || "", C: o.C || "", D: o.D || "" },
+    order: typeof doc.order === "number" ? doc.order : 0,
+    enabled: doc.enabled !== false,
+    live: !!doc.live,
+    updatedAt: doc.updatedAt || null
+  };
+}
+
+/* ============================ FIREBASE ============================ */
+class FirebaseBackend {
+  constructor() { this.mode = "firebase"; this.fb = null; this.auth = null; this.db = null; this._authCb = null; }
+  async init() {
+    const [appMod, authMod, fsMod] = await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)
+    ]);
+    this.appMod = appMod; this.authMod = authMod;
+    const app = appMod.initializeApp(FIREBASE_CONFIG);
+    this.auth = authMod.getAuth(app);
+    this.db = fsMod.getFirestore(app);
+    this.fs = fsMod;
+    authMod.onAuthStateChanged(this.auth, async (u) => {
+      let admin = null;
+      if (u) {
+        try {
+          const snap = await fsMod.getDoc(fsMod.doc(this.db, "admins", u.uid));
+          if (!snap.exists()) { await authMod.signOut(this.auth); admin = null; }
+          else admin = { uid: u.uid, email: u.email, ...snap.data() };
+        } catch (e) { admin = null; }
+      }
+      this._authCb && this._authCb(admin);
+    });
+    return true;
+  }
+  onAuth(cb) { this._authCb = cb; }
+  _email(username) { return `${username.trim().toLowerCase().replace(/\s+/g, "")}@${EMAIL_DOMAIN}`; }
+
+  async signIn(username, password) {
+    const { signInWithEmailAndPassword } = this.authMod;
+    try {
+      const cred = await signInWithEmailAndPassword(this.auth, this._email(username), password);
+      const snap = await this.fs.getDoc(this.fs.doc(this.db, "admins", cred.user.uid));
+      if (!snap.exists()) { await this.authMod.signOut(this.auth); return { ok: false, error: "This account is not an administrator." }; }
+      return { ok: true, mustChangePassword: !!snap.data().mustChangePassword };
+    } catch (e) {
+      return { ok: false, error: "Invalid username or password." };
+    }
+  }
+  async signOut() { await this.authMod.signOut(this.auth); }
+  async getAdmin() {
+    const u = this.auth.currentUser;
+    if (!u) return null;
+    const snap = await this.fs.getDoc(this.fs.doc(this.db, "admins", u.uid));
+    return snap.exists() ? { uid: u.uid, email: u.email, ...snap.data() } : null;
+  }
+  async changeCredentials({ currentPassword, newUsername, newPassword }) {
+    const a = this.authMod; const u = this.auth.currentUser;
+    if (!u) throw new Error("Not signed in.");
+    const cred = a.EmailAuthProvider.credential(u.email, currentPassword);
+    try { await a.reauthenticateWithCredential(u, cred); }
+    catch { throw new Error("Current password is incorrect."); }
+    if (newUsername && newUsername.trim()) {
+      const uname = newUsername.trim().toLowerCase().replace(/\s+/g, "");
+      if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(uname)) throw new Error("Username must be 3-24 chars (letters, numbers, _ . -).");
+      await a.updateEmail(u, this._email(uname));
+      await this.fs.setDoc(this.fs.doc(this.db, "admins", u.uid), { username: uname, mustChangePassword: false, updatedAt: this.fs.serverTimestamp() }, { merge: true });
+      this.fs.setDoc(this.fs.doc(this.db, "config", "quiz"), { updatedAt: this.fs.serverTimestamp() }, { merge: true }).catch(() => {});
+    }
+    if (newPassword) {
+      if (newPassword.length < 6) throw new Error("New password must be at least 6 characters.");
+      await a.updatePassword(u, newPassword);
+      await this.fs.setDoc(this.fs.doc(this.db, "admins", u.uid), { mustChangePassword: false, updatedAt: this.fs.serverTimestamp() }, { merge: true });
+    }
+    return true;
+  }
+
+  async getPublishedQuestions() {
+    const { collection, query, where, orderBy, getDocs } = this.fs;
+    const q = query(
+      collection(this.db, "questions"),
+      where("live", "==", true),
+      where("enabled", "==", true),
+      orderBy("order")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => normalizeQuestion({ id: d.id, ...d.data() }));
+  }
+  async submitAttempt({ name, attemptId, answers }) {
+    const { doc, writeBatch, serverTimestamp, collection } = this.fs;
+    const existing = await this.fs.getDoc(doc(this.db, "attempts", attemptId));
+    if (existing.exists()) throw new Error("This attempt has already been submitted.");
+    const batch = writeBatch(this.db);
+    batch.set(doc(this.db, "attempts", attemptId), {
+      name, attemptId, status: "completed", totalQuestions: answers.length, createdAt: serverTimestamp()
+    });
+    for (const a of answers) {
+      batch.set(doc(collection(this.db, "attempts", attemptId, "answers"), a.questionId), {
+        questionId: a.questionId, questionText: a.questionText, questionOrder: a.order,
+        optionLetter: a.optionLetter, optionText: a.optionText
+      });
+    }
+    await batch.commit();
+  }
+
+  async listQuestions() {
+    const { collection, query, orderBy, getDocs } = this.fs;
+    const snap = await getDocs(query(collection(this.db, "questions"), orderBy("order")));
+    return snap.docs.map((d) => normalizeQuestion({ id: d.id, ...d.data() }));
+  }
+  async createQuestion(q) {
+    const { collection, addDoc, serverTimestamp } = this.fs;
+    const list = await this.listQuestions();
+    const order = list.length ? Math.max(...list.map((x) => x.order)) + 1 : 1;
+    await addDoc(collection(this.db, "questions"), { ...q, order, enabled: true, live: false, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  }
+  async updateQuestion(id, q) {
+    const { doc, updateDoc, serverTimestamp } = this.fs;
+    await updateDoc(doc(this.db, "questions", id), { ...q, live: false, updatedAt: serverTimestamp() });
+  }
+  async deleteQuestion(id) { await this.fs.deleteDoc(this.fs.doc(this.db, "questions", id)); }
+  async setEnabled(id, enabled) {
+    const { doc, updateDoc, serverTimestamp } = this.fs;
+    await updateDoc(doc(this.db, "questions", id), { enabled, live: false, updatedAt: serverTimestamp() });
+  }
+  async moveQuestion(id, dir) {
+    const { doc, writeBatch, serverTimestamp } = this.fs;
+    const list = (await this.listQuestions()).sort((a, b) => a.order - b.order);
+    const i = list.findIndex((x) => x.id === id);
+    const j = dir === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    const batch = writeBatch(this.db);
+    list.forEach((q, idx) => batch.update(doc(this.db, "questions", q.id), { order: idx + 1, updatedAt: serverTimestamp() }));
+    await batch.commit();
+  }
+  async publishAll() {
+    const { doc, writeBatch, serverTimestamp } = this.fs;
+    const list = await this.listQuestions();
+    const batch = writeBatch(this.db);
+    list.forEach((q) => batch.update(doc(this.db, "questions", q.id), { live: q.enabled, updatedAt: serverTimestamp() }));
+    batch.set(doc(this.db, "config", "quiz"), { publishedAt: serverTimestamp(), count: list.filter((q) => q.enabled).length }, { merge: true });
+    await batch.commit();
+  }
+
+  async getAttempts() {
+    const { collection, query, orderBy, getDocs } = this.fs;
+    const snap = await getDocs(query(collection(this.db, "attempts"), orderBy("createdAt", "desc")));
+    return Promise.all(snap.docs.map(async (d) => {
+      const data = d.data();
+      const aSnap = await getDocs(collection(this.db, "attempts", d.id, "answers"));
+      const answers = aSnap.docs.map((x) => ({ id: x.id, ...x.data() })).sort((a, b) => (a.questionOrder || 0) - (b.questionOrder || 0));
+      return { id: d.id, ...data, createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt, answers };
+    }));
+  }
+
+  async deleteAttempt(id) {
+    const { collection, getDocs, writeBatch, deleteDoc, doc } = this.fs;
+    const aSnap = await getDocs(collection(this.db, "attempts", id, "answers"));
+    if (!aSnap.empty) {
+      const batch = writeBatch(this.db);
+      aSnap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    await deleteDoc(doc(this.db, "attempts", id));
+  }
+}
+
+/* ============================ DEMO ============================ */
+class DemoBackend {
+  constructor() { this.mode = "demo"; this._authCb = null; this.sessionKey = "fq_admin_session"; }
+  _read(k, d) { try { return JSON.parse(localStorage.getItem("fq_" + k)) ?? d; } catch { return d; } }
+  _write(k, v) { localStorage.setItem("fq_" + k, JSON.stringify(v)); }
+
+  async init() {
+    if (!this._read("questions", null)) {
+      const qs = DEFAULT_QUESTIONS.map((q, i) => ({ id: "q" + (i + 1), text: q.text, options: q.options, order: i + 1, enabled: true, live: true, updatedAt: nowISO() }));
+      this._write("questions", qs);
+    }
+    if (!this._read("admin", null)) {
+      this._write("admin", { uid: "demo-admin", username: "admin", passHash: await sha256("1234"), mustChangePassword: true });
+    }
+    if (!this._read("attempts", null)) this._write("attempts", []);
+    return true;
+  }
+  onAuth(cb) { this._authCb = cb; setTimeout(() => cb(this._admin()), 60); }
+  _admin() {
+    if (sessionStorage.getItem(this.sessionKey)) {
+      const a = this._read("admin", null);
+      return a ? { uid: a.uid, username: a.username, mustChangePassword: a.mustChangePassword } : null;
+    }
+    return null;
+  }
+  async signIn(username, password) {
+    const a = this._read("admin", null);
+    if (!a) return { ok: false, error: "Admin not initialized." };
+    if (username.trim().toLowerCase() !== a.username.toLowerCase()) return { ok: false, error: "Invalid username or password." };
+    if (await sha256(password) !== a.passHash) return { ok: false, error: "Invalid username or password." };
+    sessionStorage.setItem(this.sessionKey, "1");
+    return { ok: true, mustChangePassword: !!a.mustChangePassword };
+  }
+  async signOut() { sessionStorage.removeItem(this.sessionKey); this._authCb && this._authCb(null); }
+  async getAdmin() { return this._admin(); }
+  async changeCredentials({ currentPassword, newUsername, newPassword }) {
+    const a = this._read("admin", null);
+    if (await sha256(currentPassword) !== a.passHash) throw new Error("Current password is incorrect.");
+    if (newUsername && newUsername.trim()) {
+      const uname = newUsername.trim().toLowerCase().replace(/\s+/g, "");
+      if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(uname)) throw new Error("Username must be 3-24 chars (letters, numbers, _ . -).");
+      a.username = uname;
+    }
+    if (newPassword) {
+      if (newPassword.length < 6) throw new Error("New password must be at least 6 characters.");
+      a.passHash = await sha256(newPassword);
+    }
+    a.mustChangePassword = false;
+    this._write("admin", a);
+    return true;
+  }
+
+  async getPublishedQuestions() {
+    return this._read("questions", []).filter((q) => q.live && q.enabled).sort((a, b) => a.order - b.order).map(normalizeQuestion);
+  }
+  async submitAttempt({ name, attemptId, answers }) {
+    const all = this._read("attempts", []);
+    if (all.some((x) => x.attemptId === attemptId)) throw new Error("This attempt has already been submitted.");
+    all.unshift({
+      id: attemptId, attemptId, name, status: "completed", totalQuestions: answers.length, createdAt: nowISO(),
+      answers: answers.map((a) => ({ questionId: a.questionId, questionText: a.questionText, questionOrder: a.order, optionLetter: a.optionLetter, optionText: a.optionText }))
+    });
+    this._write("attempts", all);
+  }
+
+  async listQuestions() { return this._read("questions", []).sort((a, b) => a.order - b.order).map(normalizeQuestion); }
+  async createQuestion(q) {
+    const list = await this.listQuestions();
+    const order = list.length ? Math.max(...list.map((x) => x.order)) + 1 : 1;
+    list.push({ id: "q" + Date.now().toString(36), text: q.text, options: q.options, order, enabled: true, live: false, updatedAt: nowISO() });
+    this._write("questions", list);
+  }
+  async updateQuestion(id, q) {
+    const list = await this.listQuestions();
+    const i = list.findIndex((x) => x.id === id); if (i < 0) return;
+    list[i] = { ...list[i], ...q, live: false, updatedAt: nowISO() };
+    this._write("questions", list);
+  }
+  async deleteQuestion(id) { this._write("questions", (await this.listQuestions()).filter((x) => x.id !== id)); }
+  async setEnabled(id, enabled) {
+    const list = await this.listQuestions();
+    const i = list.findIndex((x) => x.id === id); if (i < 0) return;
+    list[i].enabled = enabled; list[i].live = false; list[i].updatedAt = nowISO();
+    this._write("questions", list);
+  }
+  async moveQuestion(id, dir) {
+    const list = (await this.listQuestions()).sort((a, b) => a.order - b.order);
+    const i = list.findIndex((x) => x.id === id); const j = dir === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    list.forEach((q, idx) => (q.order = idx + 1));
+    this._write("questions", list);
+  }
+  async publishAll() {
+    const list = await this.listQuestions();
+    list.forEach((q) => (q.live = q.enabled));
+    this._write("questions", list);
+  }
+  async getAttempts() { return this._read("attempts", []); }
+  async deleteAttempt(id) {
+    this._write("attempts", (await this.getAttempts()).filter((x) => x.id !== id && x.attemptId !== id));
+  }
+}
+
+/* ---------------- backend selection ----------------
+   Demo mode is chosen when apiKey is empty OR ?demo=1 in URL. */
+const useDemo = !FIREBASE_CONFIG.apiKey || new URLSearchParams(location.search).get("demo") === "1";
+let backend;
+try {
+  backend = useDemo ? new DemoBackend() : new FirebaseBackend();
+} catch (e) {
+  backend = new DemoBackend();
+}
+
+/* ================================================================
+   APP STATE + ROUTER
+   ================================================================ */
+const state = {
+  questions: [], answers: {}, currentIndex: 0, direction: 1,
+  user: { name: "", attemptId: uid() },
+  admin: null, adminLoaded: false, submitted: null, lastSummary: null
+};
+const view = $("#view");
+
+function navigate(hash, replace = false) {
+  if (replace) history.replaceState(null, "", hash);
+  else location.hash = hash;
+  render();
+}
+function route() { return (location.hash || "#/").replace(/^#/, "") || "/"; }
+
+/* ---------------- guard for admin ---------------- */
+const ADMIN_ROUTES = ["/admin", "/admin/questions", "/admin/responses", "/admin/settings"];
+function isAdminRoute(r) { return ADMIN_ROUTES.some((p) => r === p || r.startsWith(p + "/")); }
+
+/* ================================================================
+   RENDER
+   ================================================================ */
+async function render() {
+  let r = route();
+  if (isAdminRoute(r) && !state.admin && !r.startsWith("/admin/login")) {
+    sessionStorage.setItem("fq_redirect", r);
+    history.replaceState(null, "", "#/admin/login");
+    r = "/admin/login";
+  }
+  const page = await matchRoute(r);
+  view.innerHTML = "";
+  view.appendChild(page);
+  bindRipples(view);
+}
+
+function matchRoute(r) {
+  if (r === "/" || r === "") return HomeView();
+  if (r.startsWith("/quiz")) return QuizView();
+  if (r.startsWith("/done")) return DoneView();
+  if (r.startsWith("/admin/login")) return renderAdminLogin();
+  if (r.startsWith("/admin/questions")) return AdminQuestions();
+  if (r.startsWith("/admin/responses/")) return AdminParticipant(decodeURIComponent(r.split("/admin/responses/")[1]));
+  if (r.startsWith("/admin/responses")) return AdminResponses();
+  if (r.startsWith("/admin/settings")) return AdminSettings();
+  if (r.startsWith("/admin")) return AdminDashboard();
+  return NotFound();
+}
+
+function bindRipples(root) {
+  root.querySelectorAll(".btn").forEach((b) => {
+    if (b._rip) return; b._rip = true;
+    b.addEventListener("click", (e) => {
+      const rect = b.getBoundingClientRect();
+      const s = Math.max(rect.width, rect.height);
+      const rp = el("span", { class: "ripple" });
+      rp.style.width = rp.style.height = s + "px";
+      rp.style.left = (e.clientX - rect.left - s / 2) + "px";
+      rp.style.top = (e.clientY - rect.top - s / 2) + "px";
+      b.appendChild(rp); setTimeout(() => rp.remove(), 620);
+    });
+  });
+}
+
+function fragment(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+
+/* ================================================================
+   VIEWS: HOME
+   ================================================================ */
+function HomeView() {
+  const node = fragment(`
+  <section class="view" style="display:flex;flex-direction:column;flex:1">
+    <div class="hero">
+      <div>
+        <span class="pill"><span class="dot"></span> Live quiz · answers go to the admin</span>
+        <h1 class="hero-title">FRIENDSHIP<br><span class="grad">QUIZ</span></h1>
+        <p class="hero-sub">How well do your friends know you?</p>
+        <p class="hero-desc">Answer a short set of questions made by the quiz administrator and find out how well you really know them. Your answers are submitted privately to the administrator.</p>
+        <div class="teddy" aria-hidden="true">
+          <div class="bubble">Hi! 👋</div>
+          <svg viewBox="0 0 120 122" preserveAspectRatio="xMidYMax meet">
+            <defs>
+              <linearGradient id="bearGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#5b3df5"/>
+              </linearGradient>
+            </defs>
+            <g class="bear-zear"><circle cx="37" cy="35" r="13" class="bear-fur"/><circle cx="37" cy="36" r="7" class="bear-inner"/></g>
+            <g class="bear-zear bear-ze2"><circle cx="83" cy="35" r="13" class="bear-fur"/><circle cx="83" cy="36" r="7" class="bear-inner"/></g>
+            <circle cx="60" cy="54" r="28" class="bear-fur"/>
+            <ellipse cx="60" cy="64" rx="14" ry="11" class="bear-muzzle"/>
+            <ellipse cx="60" cy="59" rx="4.6" ry="3.4" class="bear-nose"/>
+            <circle cx="49" cy="50" r="4" class="bear-eye"/>
+            <circle cx="71" cy="50" r="4" class="bear-eye"/>
+            <ellipse cx="60" cy="100" rx="32" ry="22" class="bear-fur"/>
+            <ellipse cx="60" cy="96" rx="17" ry="13" class="bear-muzzle"/>
+            <ellipse cx="24" cy="92" rx="12" ry="7" class="bear-fur" transform="rotate(-18 24 92)"/>
+            <g class="bear-zarm"><ellipse cx="98" cy="72" rx="13" ry="8" class="bear-fur"/></g>
+            <ellipse cx="40" cy="114" rx="11" ry="6" class="bear-fur" transform="rotate(-10 40 114)"/>
+            <ellipse cx="80" cy="114" rx="11" ry="6" class="bear-fur" transform="rotate(10 80 114)"/>
+          </svg>
+        </div>
+        <div class="feature-grid">
+          <div class="feature"><div class="ico">⚡</div><h4>Fast &amp; fun</h4><p>Answer in seconds on any device.</p></div>
+          <div class="feature"><div class="ico">📱</div><h4>Responsive</h4><p>Works on mobile, tablet &amp; desktop.</p></div>
+        </div>
+      </div>
+      <div class="glass hero-card">
+        <h3 style="margin:0 0 2px;font-size:1.2rem">Start your attempt</h3>
+        <p style="margin:0;color:var(--muted);font-size:.9rem">Enter a name or nickname to begin.</p>
+        <div class="field" style="margin:0">
+          <label for="nameInput">Your name or nickname</label>
+          <input id="nameInput" class="input" placeholder="e.g. Rahul" maxlength="40" autocomplete="off" />
+          <div class="hint" id="nameHint"></div>
+        </div>
+        <div class="attempt">
+          <span>Attempt ID · <b id="attemptId">${esc(state.user.attemptId)}</b></span>
+          <span class="copy" id="copyId">copy</span>
+        </div>
+        <button class="btn block" id="startBtn">Start Quiz →</button>
+        <p class="hint warn" style="margin:0" id="quizNote"></p>
+      </div>
+    </div>
+  </section>`);
+
+  const startBtn = $("#startBtn", node);
+  startBtn.disabled = true;
+  const input = $("#nameInput", node);
+
+  backend.getPublishedQuestions().then((qs) => {
+    if (!qs.length) {
+      startBtn.disabled = true;
+      $("#quizNote", node).textContent = "The administrator has not published any questions yet. Please check back soon.";
+    } else {
+      $("#quizNote", node).textContent = `${qs.length} question${qs.length > 1 ? "s" : ""} ready.`;
+    }
+  });
+
+  const validate = () => {
+    const v = input.value.trim();
+    const ok = v.length >= 2 && v.length <= 40 && /[a-zA-Z0-9]/.test(v);
+    startBtn.disabled = !ok;
+    return ok;
+  };
+  input.addEventListener("input", () => { input.classList.remove("err"); validate(); });
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter" && validate()) startQuiz(); });
+
+  $("#copyId", node).addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(state.user.attemptId); ui.toast("ok", "Copied", "Attempt ID copied."); }
+    catch { ui.toast("info", "Attempt ID", state.user.attemptId); }
+  });
+
+  async function startQuiz() {
+    if (!validate()) { input.classList.add("err"); $("#nameHint", node).textContent = "Enter a valid name (2-40 characters)."; return; }
+    state.user.name = input.value.trim();
+    ui.loading(true, "Preparing your quiz…");
+    try {
+      state.questions = await backend.getPublishedQuestions();
+      state.answers = {}; state.currentIndex = 0; state.direction = 1;
+      if (!state.questions.length) { ui.loading(false); ui.toast("err", "No questions", "Nothing published yet."); return; }
+      ui.loading(false);
+      navigate("#/quiz");
+    } catch (e) { ui.loading(false); ui.toast("err", "Error", "Could not load questions."); }
+  }
+  startBtn.addEventListener("click", startQuiz);
+  setTimeout(() => input.focus(), 250);
+  return node;
+}
+
+/* ================================================================
+   VIEWS: QUIZ
+   ================================================================ */
+function QuizView() {
+  if (!state.questions.length) { setTimeout(() => navigate("#/", true), 0); return fragment("<div></div>"); }
+  const qi = state.currentIndex;
+  const q = state.questions[qi];
+  const total = state.questions.length;
+  const answeredCount = Object.keys(state.answers).length;
+  const pct = Math.round((answeredCount / total) * 100);
+  const isLast = qi === total - 1;
+
+  const node = fragment(`
+  <section class="view quiz-shell">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span>Question ${qi + 1} of ${total}</span>
+        <span>${answeredCount}/${total} answered · ${pct}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="glass pad q-card" id="qcard">
+      <div class="q-num">Question ${qi + 1}</div>
+      <div class="q-text">${esc(q.text)}</div>
+      <div class="options" id="options"></div>
+      <div class="q-nav">
+        <button class="btn ghost" id="prevBtn" ${qi === 0 ? "disabled" : ""}>← Previous</button>
+        <span class="spacer"></span>
+        <button class="btn" id="nextBtn">${isLast ? "Review &amp; Submit ✓" : "Next →"}</button>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+  </section>`);
+
+  const optsWrap = $("#options", node);
+  ["A", "B", "C", "D"].forEach((letter) => {
+    const text = q.options[letter];
+    if (!text) return;
+    const chosen = state.answers[q.id]?.letter === letter;
+    const btn = fragment(`<button class="option ${chosen ? "sel" : ""}" data-letter="${letter}">
+      <span class="letter">${letter}</span><span class="otxt">${esc(text)}</span></button>`);
+    btn.addEventListener("click", () => selectOption(q, letter, text, optsWrap));
+    optsWrap.appendChild(btn);
+  });
+  if (!optsWrap.children.length) optsWrap.innerHTML = `<p class="hint warn">This question has no options.</p>`;
+
+  const dots = $("#dots", node);
+  state.questions.forEach((qq, i) => {
+    const cls = ["dot-item"];
+    if (state.answers[qq.id]) cls.push("answered");
+    if (i === qi) cls.push("current");
+    const d = el("div", { class: cls.join(" "), title: "Go to question " + (i + 1) }, String(i + 1));
+    d.addEventListener("click", () => { state.direction = i > qi ? 1 : -1; state.currentIndex = i; render(); });
+    dots.appendChild(d);
+  });
+
+  $("#prevBtn", node).addEventListener("click", () => { state.direction = -1; state.currentIndex = Math.max(0, qi - 1); render(); });
+  $("#nextBtn", node).addEventListener("click", () => {
+    if (isLast) return submitQuiz(node);
+    state.direction = 1; state.currentIndex = Math.min(total - 1, qi + 1); render();
+  });
+  if (state.direction < 0) $("#qcard", node).classList.add("rev");
+  return node;
+}
+
+function selectOption(q, letter, text, wrap) {
+  wrap.querySelectorAll(".option").forEach((o) => o.classList.remove("sel", "missing"));
+  wrap.querySelector(`.option[data-letter="${letter}"]`).classList.add("sel");
+  state.answers[q.id] = { questionId: q.id, questionText: q.text, optionLetter: letter, optionText: text, order: q.order };
+  const dots = document.querySelectorAll(".dot-item");
+  if (dots[state.currentIndex]) dots[state.currentIndex].classList.add("answered");
+  const total = state.questions.length;
+  const pct = Math.round((Object.keys(state.answers).length / total) * 100);
+  const fill = $("#pfill"); if (fill) fill.style.width = pct + "%";
+  const top = document.querySelector(".progress-top span:last-child"); if (top) top.textContent = `${Object.keys(state.answers).length}/${total} answered · ${pct}%`;
+}
+
+async function submitQuiz(node) {
+  const unanswered = state.questions.filter((q) => !state.answers[q.id]);
+  if (unanswered.length) {
+    ui.toast("err", "Incomplete", `${unanswered.length} question(s) unanswered.`);
+    state.currentIndex = state.questions.indexOf(unanswered[0]);
+    render();
+    setTimeout(() => document.querySelectorAll(".option").forEach((o) => o.classList.add("missing")), 0);
+    return;
+  }
+  ui.confirm("Submit your answers?", `You are about to submit ${state.questions.length} answers as "${state.user.name}". This cannot be changed after submission.`, async () => {
+    ui.loading(true, "Submitting your answers…");
+    try {
+      const ordered = state.questions.map((q) => state.answers[q.id]);
+      await backend.submitAttempt({ name: state.user.name, attemptId: state.user.attemptId, answers: ordered });
+      state.lastSummary = ordered;
+      state.submitted = { name: state.user.name, attemptId: state.user.attemptId, at: nowISO(), answers: ordered };
+      ui.loading(false);
+      navigate("#/done");
+      ui.toast("ok", "Submitted!", "Your answers were sent to the administrator.");
+    } catch (e) {
+      ui.loading(false);
+      ui.toast("err", "Submission failed", e.message || "Please try again.");
+    }
+  }, "Submit Answers");
+}
+
+/* ================================================================
+   VIEWS: DONE
+   ================================================================ */
+function DoneView() {
+  const s = state.submitted;
+  if (!s) { setTimeout(() => navigate("#/", true), 0); return fragment("<div></div>"); }
+  const summary = s.answers.map((a, i) => `
+    <div class="summary-item">
+      <div class="qn">QUESTION ${i + 1}</div>
+      <div class="qt">${esc(a.questionText)}</div>
+      <div class="ans"><b>${esc(a.optionLetter)}</b> — ${esc(a.optionText)}</div>
+    </div>`).join("");
+  const node = fragment(`
+  <section class="view result-center">
+    <div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+    <h1 style="font-size:clamp(1.7rem,5vw,2.4rem);margin:0 0 8px">Thank you, ${esc(s.name)}!</h1>
+    <p style="color:var(--muted);margin:0 0 6px">Your answers were submitted successfully and sent privately to the administrator.</p>
+    <p class="badge-id">Attempt ID: ${esc(s.attemptId)} · ${esc(fmtDate(s.at))}</p>
+    <div class="summary-list">${summary}</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn ghost" id="homeBtn">Back to Home</button>
+      <button class="btn" id="againBtn">Take it again</button>
+    </div>
+    <p class="hint" style="margin-top:18px">A new attempt creates a new Attempt ID. Resubmission of the same attempt is not allowed.</p>
+  </section>`);
+  $("#homeBtn", node).addEventListener("click", () => navigate("#/"));
+  $("#againBtn", node).addEventListener("click", () => {
+    state.user.attemptId = uid(); state.answers = {}; state.currentIndex = 0; state.submitted = null;
+    navigate("#/");
+  });
+  return node;
+}
+
+/* ================================================================
+   ADMIN LOGIN
+   ================================================================ */
+function renderAdminLogin() {
+  const node = fragment(`
+  <section class="view result-center" style="max-width:440px">
+    <div class="glass pad">
+      <div class="logo-mark" style="margin:0 auto 16px">${heartSvg()}</div>
+      <h2 style="margin:0 0 4px">Admin Login</h2>
+      <p style="color:var(--muted);margin:0 0 22px;font-size:.9rem">Authorized personnel only.</p>
+      <form id="loginForm" style="text-align:left">
+        <div class="field"><label for="lu">Username</label><input class="input" id="lu" autocomplete="username" placeholder="admin" /></div>
+        <div class="field"><label for="lp">Password</label><input class="input" id="lp" type="password" autocomplete="current-password" placeholder="••••" /></div>
+        <button class="btn block" type="submit" id="loginBtn">Sign in</button>
+      </form>
+      <p class="hint" style="margin-top:16px" id="loginHint"></p>
+    </div>
+  </section>`);
+  if (backend.mode === "demo") {
+    $("#loginHint", node).innerHTML = `Demo mode active — default credentials <b>admin / 1234</b>. You will be asked to change the password on first login. <a href="?demo=0" style="color:var(--cyan)">Configure Firebase →</a>`;
+  }
+  const form = $("#loginForm", node);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const u = $("#lu", node).value.trim(), p = $("#lp", node).value;
+    if (!u || !p) { ui.toast("err", "Missing", "Enter username and password."); return; }
+    ui.loading(true, "Signing in…");
+    const res = await backend.signIn(u, p);
+    ui.loading(false);
+    if (!res.ok) { ui.toast("err", "Login failed", res.error); return; }
+    state.admin = await backend.getAdmin();
+    ui.toast("ok", "Welcome back", "Signed in as administrator.");
+    const redirect = sessionStorage.getItem("fq_redirect") || "/admin";
+    sessionStorage.removeItem("fq_redirect");
+    if (res.mustChangePassword) {
+      setTimeout(() => { navigate("#/admin/settings"); ui.toast("info", "Action required", "Please change the default password."); }, 200);
+    } else navigate("#" + redirect);
+  });
+  return node;
+}
+function heartSvg() { return `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`; }
+
+/* ================================================================
+   ADMIN SHELL
+   ================================================================ */
+function adminShell(active, inner, headTitle, headSub) {
+  const item = (href, key, label, icon) => `<a href="${href}" class="${active === key ? "active" : ""}" data-nav>${icon}<span>${label}</span></a>`;
+  const a = state.admin || {};
+  return fragment(`
+  <section class="view admin-grid">
+    <aside class="side glass">
+      <div class="who"><div class="name">${esc(a.username || "admin")}</div><div class="role">Administrator</div></div>
+      ${item("#/admin", "dash", "Dashboard", icoGrid())}
+      ${item("#/admin/questions", "questions", "Manage Questions", icoList())}
+      ${item("#/admin/responses", "responses", "User Responses", icoUsers())}
+      ${item("#/admin/settings", "settings", "Account Settings", icoGear())}
+      <a id="logoutBtn" style="color:var(--red)">${icoOut()}<span>Sign out</span></a>
+    </aside>
+    <div>
+      <div class="panel-head"><div><h2>${esc(headTitle)}</h2><p>${esc(headSub)}</p></div><div id="headActions"></div></div>
+      <div id="adminBody">${inner}</div>
+    </div>
+  </section>`);
+}
+
+/* ================================================================
+   ADMIN DASHBOARD
+   ================================================================ */
+async function AdminDashboard() {
+  const node = adminShell("dash", `<div class="empty">Loading statistics…</div>`, "Dashboard", "Overview of quiz activity");
+  wireLogout(node);
+  const body = $("#adminBody", node);
+  try {
+    const [attempts, questions] = await Promise.all([backend.getAttempts(), backend.listQuestions()]);
+    const completed = attempts.filter((x) => x.status === "completed");
+    const participants = new Set(attempts.map((x) => (x.name || "").trim().toLowerCase()).filter(Boolean));
+    const respCount = attempts.reduce((n, x) => n + (x.answers?.length || 0), 0);
+    const recent = attempts.slice(0, 6);
+    body.innerHTML = `
+      <div class="stat-grid">
+        ${statCard("Participants", participants.size, icoUsers(), 0)}
+        ${statCard("Quiz Attempts", attempts.length, icoList(), .06)}
+        ${statCard("Questions", questions.length, icoQuiz(), .12)}
+        ${statCard("Completed", completed.length, icoCheck(), .18)}
+      </div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        ${statCard("Total Answers", respCount, icoGrid(), .24)}
+        ${statCard("Live Questions", questions.filter((q) => q.live && q.enabled).length, icoCheck(), .3)}
+        ${statCard("Drafts / Unpublished", questions.filter((q) => !q.live).length, icoList(), .36)}
+        ${statCard("Disabled", questions.filter((q) => !q.enabled).length, icoGear(), .42)}
+      </div>
+      <div class="section-title">Recent activity</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Participant</th><th>Attempt ID</th><th>Submitted</th><th>Status</th></tr></thead>
+        <tbody id="recentRows"></tbody></table>
+      </div>`;
+    const rows = $("#recentRows", body);
+    if (!recent.length) rows.innerHTML = `<tr><td colspan="4"><div class="empty">${icoUsers()}No submissions yet.</div></td></tr>`;
+    recent.forEach((x) => {
+      const tr = el("tr", {}, `<td class="pname">${esc(x.name)}</td><td class="badge-id">${esc(x.attemptId)}</td><td>${esc(fmtDate(x.createdAt))}</td><td><span class="chip live">${esc(x.status)}</span></td>`);
+      tr.addEventListener("click", () => navigate("#/admin/responses/" + encodeURIComponent(x.id)));
+      rows.appendChild(tr);
+    });
+    $("#headActions", node).innerHTML = `<button class="btn sm" id="goResp">View responses</button>`;
+    $("#goResp", node).addEventListener("click", () => navigate("#/admin/responses"));
+  } catch (e) {
+    body.innerHTML = `<div class="empty">Could not load dashboard: ${esc(e.message)}</div>`;
+  }
+  return node;
+}
+function statCard(k, v, ico, delay) { return `<div class="stat" style="animation-delay:${(delay || 0)}s"><div class="k">${esc(k)}</div><div class="v">${v}</div><div class="ico">${ico}</div></div>`; }
+
+/* ================================================================
+   MANAGE QUESTIONS
+   ================================================================ */
+async function AdminQuestions() {
+  const node = adminShell("questions", `<div class="empty">Loading questions…</div>`, "Manage Questions", "Create, edit, reorder and publish quiz questions");
+  wireLogout(node);
+  const body = $("#adminBody", node);
+
+  async function load() {
+    body.innerHTML = `<div class="empty">Loading…</div>`;
+    const qs = await backend.listQuestions();
+    const html = `
+      <div class="toolbar">
+        <button class="btn" id="addQ">+ New Question</button>
+        <button class="btn ghost" id="previewQ">Preview Quiz</button>
+        <span class="spacer" style="flex:1"></span>
+        <button class="btn" id="publishQ">Publish Updates</button>
+      </div>
+      <p class="hint" style="margin-top:0">Editing a question marks it as <span class="chip draft">draft</span> until you click <b>Publish Updates</b>. Users only ever see <span class="chip live">live</span> questions.</p>
+      <div id="qlist"></div>`;
+    body.innerHTML = html;
+    const list = $("#qlist", body);
+    if (!qs.length) list.innerHTML = `<div class="empty">${icoList()}No questions yet. Create your first question.</div>`;
+    qs.forEach((q, i) => list.appendChild(questionRow(q, i, qs.length, load)));
+
+    $("#addQ", body).addEventListener("click", () => questionModal(null, load));
+    $("#previewQ", body).addEventListener("click", () => previewModal(qs));
+    $("#publishQ", body).addEventListener("click", async () => {
+      ui.loading(true, "Publishing…");
+      try { await backend.publishAll(); ui.loading(false); ui.toast("ok", "Published", "Users will now see the latest questions."); load(); }
+      catch (e) { ui.loading(false); ui.toast("err", "Publish failed", e.message); }
+    });
+  }
+  load();
+  return node;
+}
+
+function questionRow(q, i, total, reload) {
+  const row = fragment(`
+    <div class="qrow ${q.enabled ? "" : "off"}">
+      <div class="idx">${i + 1}</div>
+      <div class="body">
+        <h4>${esc(q.text)}</h4>
+        <div class="opts">${["A", "B", "C", "D"].map((L) => `<span><b>${L}</b> · ${esc(q.options[L] || "—")}</span>`).join("")}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <span class="chip ${q.live && q.enabled ? "live" : (q.enabled ? "draft" : "off")}">${q.live && q.enabled ? "LIVE" : (q.enabled ? "DRAFT" : "DISABLED")}</span>
+          <label class="switch" title="Enable/disable"><input type="checkbox" ${q.enabled ? "checked" : ""} data-toggle><span class="track"></span></label>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="icon-btn" data-up title="Move up" ${i === 0 ? "disabled" : ""}>${icoUp()}</button>
+        <button class="icon-btn" data-down title="Move down" ${i === total - 1 ? "disabled" : ""}>${icoDown()}</button>
+        <button class="icon-btn" data-edit title="Edit">${icoEdit()}</button>
+        <button class="icon-btn" data-del title="Delete">${icoTrash()}</button>
+      </div>
+    </div>`);
+  $("[data-toggle]", row).addEventListener("change", async (e) => {
+    try { await backend.setEnabled(q.id, e.target.checked); ui.toast("ok", "Updated", e.target.checked ? "Question enabled (draft)." : "Question disabled."); reload(); }
+    catch (err) { ui.toast("err", "Error", err.message); }
+  });
+  $("[data-up]", row).addEventListener("click", async () => { await backend.moveQuestion(q.id, "up"); reload(); });
+  $("[data-down]", row).addEventListener("click", async () => { await backend.moveQuestion(q.id, "down"); reload(); });
+  $("[data-edit]", row).addEventListener("click", () => questionModal(q, reload));
+  $("[data-del]", row).addEventListener("click", () => {
+    ui.confirm("Delete question?", `"${q.text}" will be permanently deleted. Historical user responses keep their own snapshot and are not affected.`, async () => {
+      await backend.deleteQuestion(q.id); ui.toast("ok", "Deleted", "Question removed."); reload();
+    }, "Delete");
+  });
+  return row;
+}
+
+function questionModal(existing, onSave) {
+  const q = existing || { text: "", options: { A: "", B: "", C: "", D: "" } };
+  const body = `
+    <div class="field"><label>Question text</label><textarea id="qText" maxlength="300" placeholder="e.g. Who is your best friend?">${esc(q.text)}</textarea></div>
+    ${["A", "B", "C", "D"].map((L) => `<div class="field"><label>Option ${L}</label><input class="input" id="opt${L}" maxlength="160" value="${esc(q.options[L] || "")}" placeholder="Option ${L} text" /></div>`).join("")}`;
+  ui.modal({
+    title: existing ? "Edit Question" : "New Question",
+    body,
+    actions: [
+      { label: "Cancel", cls: "ghost" },
+      { label: existing ? "Save changes" : "Create question", handler: async (root) => {
+        const text = $("#qText", root).value.trim();
+        const options = {};
+        for (const L of ["A", "B", "C", "D"]) options[L] = $("#opt" + L, root).value.trim();
+        if (text.length < 3) { ui.toast("err", "Invalid", "Question text is too short."); return false; }
+        if (Object.values(options).some((v) => !v)) { ui.toast("err", "Invalid", "All four options are required."); return false; }
+        try {
+          if (existing) { await backend.updateQuestion(existing.id, { text, options }); ui.toast("ok", "Saved", "Question updated as draft."); }
+          else { await backend.createQuestion({ text, options }); ui.toast("ok", "Created", "Question added as draft."); }
+          onSave();
+        } catch (e) { ui.toast("err", "Error", e.message); return false; }
+      } }
+    ]
+  });
+}
+
+function previewModal(qs) {
+  const live = qs.filter((q) => q.enabled);
+  const body = live.length
+    ? live.map((q, i) => `<div class="answer-block"><div class="qn">QUESTION ${i + 1}</div><div class="qt">${esc(q.text)}</div>
+        <div class="opts">${["A", "B", "C", "D"].map((L) => `<span><b>${L}</b> · ${esc(q.options[L] || "—")}</span>`).join("")}</div></div>`).join("")
+    : "<p class='hint'>No enabled questions to preview.</p>";
+  ui.modal({ title: "Quiz Preview (" + live.length + " questions)", body, actions: [{ label: "Close", cls: "ghost" }] });
+}
+
+/* ================================================================
+   USER RESPONSES
+   ================================================================ */
+async function AdminResponses() {
+  const node = adminShell("responses", `<div class="empty">Loading responses…</div>`, "User Responses", "Private participant submissions");
+  wireLogout(node);
+  const body = $("#adminBody", node);
+  let all = [];
+  const sel = { on: false, set: new Set() };
+
+  async function load() {
+    body.innerHTML = `<div class="empty">Loading…</div>`;
+    all = await backend.getAttempts();
+    body.innerHTML = `
+      <div class="toolbar">
+        <button class="btn sm" id="selToggle" title="Enter selection mode">Select…</button>
+        <button class="btn danger sm" id="selDelete" disabled>Clear selected</button>
+        <span class="num-chip" id="selCount" style="display:none">0</span>
+        <input class="input grow" id="fSearch" placeholder="Search participant name or attempt ID…" />
+        <select id="fStatus"><option value="">All statuses</option><option value="completed">Completed</option></select>
+        <input class="input" type="date" id="fFrom" title="From date" />
+        <input class="input" type="date" id="fTo" title="To date" />
+        <select id="fSort"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
+        <span class="spacer" style="flex:1"></span>
+        <button class="btn ghost sm" id="fClear">Reset</button>
+        <button class="btn sm" id="exportCsv">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead id="thead"></thead><tbody id="rows"></tbody></table>
+      </div>
+      <div class="section-title">Aggregated option statistics (all submissions)</div>
+      <div id="agg"></div>`;
+    ["fSearch", "fStatus", "fFrom", "fTo", "fSort"].forEach((id) => $("#" + id, body).addEventListener("input", draw));
+    $("#fClear", body).addEventListener("click", () => { $("#fSearch", body).value = ""; $("#fStatus", body).value = ""; $("#fFrom", body).value = ""; $("#fTo", body).value = ""; $("#fSort", body).value = "new"; draw(); });
+    $("#exportCsv", body).addEventListener("click", exportCsv);
+    $("#selToggle", body).addEventListener("click", toggleSelect);
+    $("#selDelete", body).addEventListener("click", doDelete);
+    draw();
+  }
+
+  function filtered() {
+    const s = $("#fSearch", body)?.value.trim().toLowerCase() || "";
+    const st = $("#fStatus", body)?.value || "";
+    const from = $("#fFrom", body)?.value;
+    const to = $("#fTo", body)?.value;
+    const sort = $("#fSort", body)?.value || "new";
+    let list = all.filter((x) => {
+      if (s && !(String(x.name || "").toLowerCase().includes(s) || String(x.attemptId || "").toLowerCase().includes(s))) return false;
+      if (st && x.status !== st) return false;
+      const t = x.createdAt ? new Date(x.createdAt).getTime() : 0;
+      if (from && t < new Date(from + "T00:00:00").getTime()) return false;
+      if (to && t > new Date(to + "T23:59:59").getTime()) return false;
+      return true;
+    });
+    list.sort((a, b) => sort === "new" ? new Date(b.createdAt) - new Date(a.createdAt) : new Date(a.createdAt) - new Date(b.createdAt));
+    return list;
+  }
+
+  function draw() {
+    const list = filtered();
+    const rows = $("#rows", body);
+    if (!rows) return;
+    drawSelUI();
+    $("#thead", body).innerHTML =
+      `<tr>${sel.on ? `<th class="sel-col"><input type="checkbox" class="check" id="selAll" /></th>` : ""}` +
+      `<th>Participant</th><th>Attempt ID</th><th>Submitted</th><th>Answers</th><th>Status</th></tr>`;
+    if (!list.length) {
+      rows.innerHTML = `<tr><td colspan="${sel.on ? 6 : 5}"><div class="empty">${icoUsers()}No matching responses.</div></td></tr>`;
+    } else {
+      rows.innerHTML = "";
+      list.forEach((x) => {
+        const checked = sel.set.has(x.id);
+        const tr = el("tr", { class: sel.on && checked ? "sel-row" : "" },
+          (sel.on ? `<td class="sel-col"><input type="checkbox" class="check" data-id="${esc(x.id)}" ${checked ? "checked" : ""} /></td>` : "") +
+          `<td class="pname">${esc(x.name)}</td><td class="badge-id">${esc(x.attemptId)}</td><td>${esc(fmtDate(x.createdAt))}</td><td>${x.answers?.length || 0}</td><td><span class="chip live">${esc(x.status)}</span></td>`);
+        tr.addEventListener("click", (e) => {
+          if (sel.on) { const cb = tr.querySelector(".check"); if (cb) cb.click(); }
+          else navigate("#/admin/responses/" + encodeURIComponent(x.id));
+        });
+        const cb = tr.querySelector(".check");
+        if (cb) {
+          cb.addEventListener("click", (e) => e.stopPropagation());
+          cb.addEventListener("change", () => {
+            tr.classList.toggle("sel-row", cb.checked);
+            addSel(x.id, cb.checked);
+            syncSelAll();
+          });
+        }
+        rows.appendChild(tr);
+      });
+      const selAll = $("#selAll", body);
+      if (selAll) {
+        selAll.addEventListener("change", () => {
+          const t = selAll.checked;
+          rows.querySelectorAll(".check").forEach((c) => { c.checked = t; c.closest("tr").classList.toggle("sel-row", t); addSel(c.dataset.id, t); });
+          drawSelUI();
+        });
+      }
+    }
+    drawAgg(list);
+  }
+
+  function addSel(id, checked) {
+    if (checked) sel.set.add(id); else sel.set.delete(id);
+    drawSelUI();
+  }
+  function drawSelUI() {
+    const del = $("#selDelete", body); if (!del) return;
+    const btn = $("#selToggle", body);
+    const n = sel.set.size;
+    if (btn) { btn.innerHTML = sel.on ? "Cancel" : "Select…"; btn.classList.toggle("active", sel.on); }
+    del.disabled = !sel.on || n === 0;
+    del.innerHTML = n ? `Clear selected (${n})` : "Clear selected";
+    const c = $("#selCount", body);
+    if (c) { c.style.display = n ? "inline-grid" : "none"; if (c.textContent != n) { c.textContent = n; c.style.animation = "none"; void c.offsetWidth; c.style.animation = ""; } }
+  }
+  function syncSelAll() {
+    const rows = $("#rows", body); if (!rows) return;
+    const selAll = $("#selAll", body); if (!selAll) return;
+    const checks = rows.querySelectorAll(".check");
+    selAll.checked = checks.length > 0 && [...checks].every((c) => c.checked);
+  }
+  function toggleSelect() {
+    sel.on = !sel.on;
+    if (!sel.on) sel.set.clear();
+    draw();
+  }
+  function doDelete() {
+    const n = sel.set.size;
+    if (!sel.on || !n) { ui.toast("info", "Nothing selected", "Enable Select to choose responses, then clear them here."); return; }
+    ui.confirm("Delete selected responses?", `${n} response${n > 1 ? "s" : ""} will be permanently deleted. This cannot be undone.`, async () => {
+      ui.loading(true, `Deleting ${n} response${n > 1 ? "s" : ""}…`);
+      try {
+        for (const id of [...sel.set]) await backend.deleteAttempt(id);
+        ui.loading(false);
+        ui.toast("ok", "Deleted", `${n} response${n > 1 ? "s" : ""} removed.`);
+        sel.set.clear();
+        const tblRows = $("#rows", body);
+        tblRows.querySelectorAll("tr.sel-row").forEach((tr) => {
+          tr.classList.add("row-removing");
+          tr.addEventListener("animationend", () => tr.remove(), { once: true });
+        });
+        await sleep(520);
+        all = await backend.getAttempts();
+        draw();
+      } catch (e) {
+        ui.loading(false);
+        ui.toast("err", "Delete failed", e.message);
+      }
+    }, "Delete");
+  }
+
+  function drawAgg(list) {
+    const agg = $("#agg", body); if (!agg) return;
+    const byQ = {}; const orderMap = {};
+    list.forEach((x) => (x.answers || []).forEach((a) => {
+      const key = a.questionId;
+      if (!byQ[key]) byQ[key] = { text: a.questionText, counts: { A: 0, B: 0, C: 0, D: 0 }, opts: {}, order: a.questionOrder || 0 };
+      byQ[key].counts[a.optionLetter] = (byQ[key].counts[a.optionLetter] || 0) + 1;
+      byQ[key].opts[a.optionLetter] = a.optionText;
+    }));
+    const qs = Object.values(byQ).sort((a, b) => a.order - b.order);
+    if (!qs.length) { agg.innerHTML = `<p class="hint">No answer data yet.</p>`; return; }
+    agg.innerHTML = qs.map((q) => {
+      const total = Object.values(q.counts).reduce((a, b) => a + b, 0) || 1;
+      return `<div class="glass" style="padding:16px;margin-bottom:12px">
+        <div style="font-weight:800;margin-bottom:12px">${esc(q.text)} <span class="badge-id">· ${total} responses</span></div>
+        ${["A", "B", "C", "D"].map((L) => {
+          const c = q.counts[L] || 0; const pct = Math.round((c / total) * 100);
+          return `<div class="bar-row"><span><b>${L}</b> ${esc(q.opts[L] || "")}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span>${c} (${pct}%)</span></div>`;
+        }).join("")}
+      </div>`;
+    }).join("");
+  }
+
+  function exportCsv() {
+    const list = filtered();
+    if (!list.length) { ui.toast("info", "Nothing to export", "No rows match your filters."); return; }
+    const rows = [["Participant", "AttemptID", "SubmittedAt", "Status", "QuestionNo", "QuestionText", "SelectedLetter", "SelectedText"]];
+    list.forEach((x) => (x.answers || []).forEach((a, i) => {
+      rows.push([x.name, x.attemptId, x.createdAt || "", x.status, i + 1, a.questionText, a.optionLetter, a.optionText]);
+    }));
+    const csv = rows.map((r) => r.map((f) => `"${String(f ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `friendship-quiz-responses-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    ui.toast("ok", "Exported", "CSV downloaded.");
+  }
+
+  load();
+  return node;
+}
+
+/* ================================================================
+   PARTICIPANT DETAIL
+   ================================================================ */
+async function AdminParticipant(id) {
+  const node = adminShell("responses", `<div class="empty">Loading…</div>`, "Participant Details", "Individual response record");
+  wireLogout(node);
+  const body = $("#adminBody", node);
+  try {
+    const all = await backend.getAttempts();
+    const a = all.find((x) => x.id === id || x.attemptId === id);
+    if (!a) { body.innerHTML = `<div class="empty">Participant record not found.</div>`; return node; }
+    const answers = (a.answers || []).sort((x, y) => (x.questionOrder || 0) - (y.questionOrder || 0));
+    body.innerHTML = `
+      <button class="btn ghost sm" id="back">← All responses</button>
+      <div class="glass pad" style="margin:14px 0">
+        <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center">
+          <div>
+            <div class="badge-id">PARTICIPANT</div>
+            <div style="font-size:1.5rem;font-weight:900">${esc(a.name)}</div>
+            <div class="badge-id">Attempt ID: ${esc(a.attemptId)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="badge-id">SUBMITTED</div>
+            <div style="font-weight:700">${esc(fmtDate(a.createdAt))}</div>
+            <span class="chip live">${esc(a.status)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-title">Answers (${answers.length})</div>
+      <div id="ansWrap"></div>`;
+    $("#back", body).addEventListener("click", () => navigate("#/admin/responses"));
+    const wrap = $("#ansWrap", body);
+    if (!answers.length) wrap.innerHTML = `<div class="empty">No answers recorded.</div>`;
+    answers.forEach((ans, i) => wrap.appendChild(fragment(`
+      <div class="answer-block">
+        <div class="qn">QUESTION ${i + 1}</div>
+        <div class="qt">${esc(ans.questionText)}</div>
+        <div class="sel"><span class="l">${esc(ans.optionLetter)}</span><span style="font-weight:700">${esc(ans.optionText)}</span></div>
+      </div>`)));
+  } catch (e) {
+    body.innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`;
+  }
+  return node;
+}
+
+/* ================================================================
+   ADMIN SETTINGS
+   ================================================================ */
+function AdminSettings() {
+  const a = state.admin || {};
+  const mustChange = !!a.mustChangePassword;
+  const node = adminShell("settings", `
+    ${mustChange ? `<div class="glass pad" style="border-color:var(--amber);margin-bottom:18px"><b style="color:var(--amber)">Action required</b><p class="hint" style="margin:6px 0 0">You are still using the default password. Please change your username and/or password now.</p></div>` : ""}
+    <div class="grid2">
+      <div class="glass pad">
+        <h3 style="margin:0 0 4px">Change credentials</h3>
+        <p class="hint" style="margin:0 0 18px">For security you must confirm your current password.</p>
+        <form id="credForm">
+          <div class="field"><label>Current password</label><input class="input" type="password" id="curPass" autocomplete="current-password" required /></div>
+          <div class="field"><label>New username <span class="hint">(optional)</span></label><input class="input" id="newUser" placeholder="${esc(a.username || "admin")}" autocomplete="off" /></div>
+          <div class="field"><label>New password <span class="hint">(optional, min 6 chars)</span></label><input class="input" type="password" id="newPass" autocomplete="new-password" /></div>
+          <div class="field"><label>Confirm new password</label><input class="input" type="password" id="newPass2" autocomplete="new-password" /></div>
+          <button class="btn block" type="submit">Save changes</button>
+        </form>
+      </div>
+      <div class="glass pad">
+        <h3 style="margin:0 0 4px">Backend</h3>
+        <p class="hint" style="margin:0 0 14px">Current storage &amp; authentication mode.</p>
+        <div class="answer-block"><div class="qn">MODE</div><div style="font-weight:800">${backend.mode === "firebase" ? "Firebase (Auth + Firestore)" : "Demo (localStorage — insecure)"}</div></div>
+        <div class="answer-block"><div class="qn">ACCOUNT</div><div>${esc(a.username || "admin")}</div><div class="badge-id">${esc(a.email || a.uid || "")}</div></div>
+        ${backend.mode === "demo" ? `<p class="hint warn">Demo mode stores data only in this browser and cannot securely protect credentials. Deploy with Firebase for real use.</p>` : `<p class="hint">Security rules restrict all writes and reads to authenticated administrators.</p>`}
+      </div>
+    </div>`, "Account Settings", "Manage your administrator account");
+  wireLogout(node);
+
+  $("#credForm", node).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cur = $("#curPass", node).value;
+    const nu = $("#newUser", node).value.trim();
+    const np = $("#newPass", node).value;
+    const np2 = $("#newPass2", node).value;
+    if (!cur) { ui.toast("err", "Missing", "Enter your current password."); return; }
+    if (np && np !== np2) { ui.toast("err", "Mismatch", "New passwords do not match."); $("#newPass2", node).classList.add("err"); return; }
+    if (!nu && !np) { ui.toast("info", "Nothing to change", "Enter a new username or password."); return; }
+    ui.loading(true, "Updating credentials…");
+    try {
+      await backend.changeCredentials({ currentPassword: cur, newUsername: nu, newPassword: np });
+      state.admin = await backend.getAdmin();
+      ui.loading(false);
+      ui.toast("ok", "Saved", "Your credentials were updated.");
+      navigate("#/admin");
+    } catch (err) {
+      ui.loading(false);
+      ui.toast("err", "Update failed", err.message);
+    }
+  });
+  return node;
+}
+
+/* ================================================================
+   MISC
+   ================================================================ */
+function wireLogout(node) {
+  const b = $("#logoutBtn", node);
+  if (b) b.addEventListener("click", async () => { await backend.signOut(); ui.toast("info", "Signed out"); navigate("#/admin/login"); });
+}
+function NotFound() { return fragment(`<section class="view result-center"><h1>404</h1><p style="color:var(--muted)">Page not found.</p><a class="btn" href="#/">Go home</a></section>`); }
+
+/* icons */
+function icoGrid(){return svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>');}
+function icoList(){return svg('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/>');}
+function icoUsers(){return svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>');}
+function icoGear(){return svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>');}
+function icoOut(){return svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>');}
+function icoCheck(){return svg('<polyline points="20 6 9 17 4 12"/>');}
+function icoQuiz(){return svg('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>');}
+function icoEdit(){return svg('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>');}
+function icoTrash(){return svg('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>');}
+function icoUp(){return svg('<polyline points="18 15 12 9 6 15"/>');}
+function icoDown(){return svg('<polyline points="6 9 12 15 18 9"/>');}
+function svg(inner){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;}
+
+/* ================================================================
+   BOOT
+   ================================================================ */
+async function boot() {
+  ui.loading(true, useDemo ? "Starting demo…" : "Connecting…");
+  try { await backend.init(); }
+  catch (e) { console.error(e); ui.toast("err", "Backend error", "Falling back to demo mode."); backend = new DemoBackend(); await backend.init(); }
+
+  backend.onAuth((admin) => {
+    state.admin = admin; state.adminLoaded = true;
+    const r = route();
+    if (!admin && isAdminRoute(r) && !r.startsWith("/admin/login")) {
+      sessionStorage.setItem("fq_redirect", r); navigate("#/admin/login", true);
+    } else if (admin && r === "/admin/login") {
+      navigate(sessionStorage.getItem("fq_redirect") || "/admin", true);
+    } else {
+      render();
+    }
+  });
+
+  $("#backendBadge").innerHTML = backend.mode === "firebase"
+    ? "Secured with Firebase Auth + Cloud Firestore"
+    : "Demo mode · data stored in this browser only · <a href='?demo=0' style='color:var(--cyan)'>configure Firebase</a>";
+
+  addEventListener("hashchange", render);
+  ui.loading(false);
+  render();
+}
+boot();
+</script>
+</body>
+</html>
