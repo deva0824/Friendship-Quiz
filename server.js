@@ -77,21 +77,13 @@ function loadAdmin() {
   return admin;
 }
 
-const BUILTIN_QUESTIONS = [
-  { text: "Who is your best friend?", options: { A: "My school friend", B: "My college friend", C: "My neighbour", D: "My cousin" } },
-  { text: "What is my favourite colour?", options: { A: "Blue", B: "Green", C: "Red", D: "Black" } },
-  { text: "Where did we first meet?", options: { A: "College", B: "A party", C: "Online", D: "Work" } },
-  { text: "What do we argue about most?", options: { A: "Food", B: "Movies", C: "Music", D: "Nothing" } },
-  { text: "What is my dream trip?", options: { A: "Beach", B: "Mountains", C: "City", D: "Space" } }
-];
-
 function loadQuestions() {
   let qs = readJSON(FILES.questions, null);
   if (!qs) {
     // Prefer a root-level questions.json (exported from the admin panel).
-    let seed = BUILTIN_QUESTIONS;
+    let seed = [];
     const rootSeed = readJSON(path.join(ROOT, "questions.json"), null);
-    if (Array.isArray(rootSeed) && rootSeed.length) seed = rootSeed;
+    if (Array.isArray(rootSeed)) seed = rootSeed;
     qs = seed.filter((q) => q && q.text && q.options).map((q, i) => ({
       id: "q" + (i + 1), text: q.text, options: q.options,
       order: i + 1, enabled: q.enabled !== false, live: true, updatedAt: new Date().toISOString()
