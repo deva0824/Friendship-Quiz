@@ -1,0 +1,52 @@
+[
+  {
+    "text": "How you feel while speaking to me?",
+    "options": { "A": "Comfortable", "B": "Tension", "C": "irritation", "D": "Not bad" },
+    "enabled": true
+  },
+  {
+    "text": "What kind of friend am I to you?",
+    "options": { "A": "Best friend", "B": "Friend", "C": "Bad Friend", "D": "Not Friend" },
+    "enabled": true
+  },
+  {
+    "text": "Where did we first meet in School?",
+    "options": { "A": "8th Class", "B": "9th Class", "C": "11th Class", "D": "12th Class" },
+    "enabled": true
+  },
+  {
+    "text": "How much you know about me?",
+    "options": { "A": "Nalla Theriyum", "B": "Konjam theriyum", "C": "Therinjuka intrast illa", "D": "Theriyathu" },
+    "enabled": true
+  },
+  {
+    "text": "How much did you like me?",
+    "options": { "A": "Romba Pudikum", "B": "Pudikum", "C": "Konjam Pudikum", "D": "Pudikathu" },
+    "enabled": true
+  },
+  {
+    "text": "What is my biggest weakness??",
+    "options": { "A": "Food", "B": "Girl", "C": "Sleep", "D": "My friend" },
+    "enabled": true
+  },
+  {
+    "text": "What would you do if I tell you a secret??",
+    "options": { "A": "Keep it forever", "B": "Tell my pillow", "C": "Tell to one trusted friend", "D": "Accidentally Reveal it" },
+    "enabled": true
+  },
+  {
+    "text": "Your reaction when I message you?",
+    "options": { "A": "Romba pidikum", "B": "Pidikum", "C": "Ethukuda message pannanum", "D": "Pidikathu" },
+    "enabled": true
+  },
+  {
+    "text": "When is my Birthday Date?",
+    "options": { "A": "Dec 06", "B": "Dec 12", "C": "Dec 11", "D": "None of these" },
+    "enabled": true
+  },
+  {
+    "text": "Enna pathi oru Honest Reply?",
+    "options": { "A": "Jolly Type", "B": "Lovely", "C": "Angry Boy", "D": "Sweet boy" },
+    "enabled": true
+  }
+]

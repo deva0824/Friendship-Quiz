@@ -852,14 +852,87 @@ class DemoBackend {
   }
 }
 
+/* ============================ API (Node server) ============================
+   Talks to the zero-dependency server in server.js. All questions and
+   submissions live on the server, so the admin sees every participant's
+   details from ANY device, browser or tab. */
+class ApiBackend {
+  constructor() { this.mode = "api"; this._authCb = null; }
+  async _req(path, { method = "GET", body } = {}) {
+    const opts = { method, headers: {}, credentials: "same-origin", cache: "no-store" };
+    if (body !== undefined) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+    const res = await fetch(path, opts);
+    let data = null;
+    try { data = await res.json(); } catch { data = null; }
+    if (!res.ok) { const err = new Error((data && data.error) || `Request failed (${res.status})`); err.status = res.status; throw err; }
+    return data;
+  }
+  async init() {
+    const cfg = await this._req("/api/config");
+    if (!cfg || cfg.mode !== "api") throw new Error("Server API not available.");
+    return true;
+  }
+  onAuth(cb) {
+    this._authCb = cb;
+    this.getAdmin().then((admin) => cb(admin)).catch(() => cb(null));
+  }
+  async signIn(username, password) {
+    try {
+      const res = await this._req("/api/admin/login", { method: "POST", body: { username, password } });
+      return { ok: true, mustChangePassword: !!res.mustChangePassword };
+    } catch (e) {
+      return { ok: false, error: e.status === 401 ? "Invalid username or password." : (e.message || "Sign in failed.") };
+    }
+  }
+  async signOut() {
+    try { await this._req("/api/admin/logout", { method: "POST" }); } catch (e) { /* ignore */ }
+    this._authCb && this._authCb(null);
+  }
+  async getAdmin() {
+    try { const s = await this._req("/api/admin/session"); return { username: s.username, mustChangePassword: !!s.mustChangePassword }; }
+    catch (e) { return null; }
+  }
+  async changeCredentials({ currentPassword, newUsername, newPassword }) {
+    await this._req("/api/admin/credentials", { method: "POST", body: { currentPassword, newUsername, newPassword } });
+    return true;
+  }
+
+  async getPublishedQuestions() {
+    const list = await this._req("/api/questions");
+    return (list || []).map(normalizeQuestion);
+  }
+  async submitAttempt({ name, attemptId, answers }) {
+    await this._req("/api/attempts", { method: "POST", body: { name, attemptId, answers } });
+  }
+
+  async listQuestions() {
+    const list = await this._req("/api/admin/questions");
+    return (list || []).map(normalizeQuestion);
+  }
+  async createQuestion(q) { await this._req("/api/admin/questions", { method: "POST", body: { text: q.text, options: q.options } }); }
+  async updateQuestion(id, q) { await this._req("/api/admin/questions/" + encodeURIComponent(id), { method: "PUT", body: { text: q.text, options: q.options } }); }
+  async deleteQuestion(id) { await this._req("/api/admin/questions/" + encodeURIComponent(id), { method: "DELETE" }); }
+  async setEnabled(id, enabled) { await this._req("/api/admin/questions/" + encodeURIComponent(id) + "/toggle", { method: "POST", body: { enabled } }); }
+  async moveQuestion(id, dir) { await this._req("/api/admin/questions/" + encodeURIComponent(id) + "/move", { method: "POST", body: { dir } }); }
+  async publishAll() { await this._req("/api/admin/publish", { method: "POST" }); }
+
+  async getAttempts() { return (await this._req("/api/admin/attempts")) || []; }
+  async deleteAttempt(id) { await this._req("/api/admin/attempts/" + encodeURIComponent(id), { method: "DELETE" }); }
+}
+
 /* ---------------- backend selection ----------------
-   Demo mode is chosen when apiKey is empty OR ?demo=1 in URL. */
-const useDemo = !FIREBASE_CONFIG.apiKey || new URLSearchParams(location.search).get("demo") === "1";
-let backend;
-try {
-  backend = useDemo ? new DemoBackend() : new FirebaseBackend();
-} catch (e) {
-  backend = new DemoBackend();
+   Priority: ?demo=1 forces demo, a configured Firebase config uses Firebase,
+   otherwise use the Node server API (shared storage) when available, and
+   finally fall back to demo mode (offline / static hosting). */
+let backend = null;
+async function chooseBackend() {
+  if (new URLSearchParams(location.search).get("demo") === "1") return new DemoBackend();
+  if (FIREBASE_CONFIG.apiKey) return new FirebaseBackend();
+  try {
+    const res = await fetch("/api/config", { cache: "no-store", credentials: "same-origin" });
+    if (res.ok) { const cfg = await res.json(); if (cfg && cfg.mode === "api") return new ApiBackend(); }
+  } catch (e) { /* not served by the Node server */ }
+  return new DemoBackend();
 }
 
 /* ================================================================
@@ -1185,7 +1258,9 @@ function renderAdminLogin() {
       <p class="hint" style="margin-top:16px" id="loginHint"></p>
     </div>
   </section>`);
-  if (backend.mode === "demo") {
+  if (backend.mode === "api") {
+    $("#loginHint", node).innerHTML = `Server mode active — default credentials <b>admin / 1234</b> unless changed. You will be asked to change the password on first login.`;
+  } else if (backend.mode === "demo") {
     $("#loginHint", node).innerHTML = `Demo mode active — default credentials <b>admin / 1234</b>. You will be asked to change the password on first login. <a href="?demo=0" style="color:var(--cyan)">Configure Firebase →</a>`;
   }
   const form = $("#loginForm", node);
@@ -1668,9 +1743,9 @@ function AdminSettings() {
       <div class="glass pad">
         <h3 style="margin:0 0 4px">Backend</h3>
         <p class="hint" style="margin:0 0 14px">Current storage &amp; authentication mode.</p>
-        <div class="answer-block"><div class="qn">MODE</div><div style="font-weight:800">${backend.mode === "firebase" ? "Firebase (Auth + Firestore)" : "Demo (localStorage — insecure)"}</div></div>
+        <div class="answer-block"><div class="qn">MODE</div><div style="font-weight:800">${backend.mode === "firebase" ? "Firebase (Auth + Firestore)" : backend.mode === "api" ? "Server (shared JSON storage)" : "Demo (localStorage — insecure)"}</div></div>
         <div class="answer-block"><div class="qn">ACCOUNT</div><div>${esc(a.username || "admin")}</div><div class="badge-id">${esc(a.email || a.uid || "")}</div></div>
-        ${backend.mode === "demo" ? `<p class="hint warn">Demo mode stores data only in this browser and cannot securely protect credentials. Deploy with Firebase for real use.</p>` : `<p class="hint">Security rules restrict all writes and reads to authenticated administrators.</p>`}
+        ${backend.mode === "firebase" ? `<p class="hint">Security rules restrict all writes and reads to authenticated administrators.</p>` : backend.mode === "api" ? `<p class="hint">Stored on the server — every participant's answers are visible to the admin from any device.</p>` : `<p class="hint warn">Demo mode stores data only in this browser and cannot securely protect credentials. Deploy with Firebase for real use.</p>`}
       </div>
     </div>`, "Account Settings", "Manage your administrator account");
   wireLogout(node);
@@ -1726,7 +1801,8 @@ function svg(inner){return `<svg viewBox="0 0 24 24" fill="none" stroke="current
    BOOT
    ================================================================ */
 async function boot() {
-  ui.loading(true, useDemo ? "Starting demo…" : "Connecting…");
+  ui.loading(true, "Starting…");
+  backend = await chooseBackend();
   try { await backend.init(); }
   catch (e) { console.error(e); ui.toast("err", "Backend error", "Falling back to demo mode."); backend = new DemoBackend(); await backend.init(); }
 
@@ -1744,7 +1820,9 @@ async function boot() {
 
   $("#backendBadge").innerHTML = backend.mode === "firebase"
     ? "Secured with Firebase Auth + Cloud Firestore"
-    : "Demo mode · data stored in this browser only · <a href='?demo=0' style='color:var(--cyan)'>configure Firebase</a>";
+    : backend.mode === "api"
+    ? "Server mode · answers from every device are shared with the admin"
+    : "Demo mode · data stored in this browser only · <a href='?demo=1' style='color:var(--cyan)'>stay in demo</a>";
 
   addEventListener("hashchange", render);
   ui.loading(false);
