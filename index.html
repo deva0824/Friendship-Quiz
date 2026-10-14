@@ -138,6 +138,34 @@ body{
   animation:gradShift 7s ease infinite;
 }
 @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+/* "created by BENISH" credit line */
+.hero-credit{
+  display:inline-flex;align-items:center;gap:.45em;flex-wrap:wrap;
+  margin:0 0 16px;padding:7px 16px 7px 14px;border-radius:999px;
+  border:1px solid var(--stroke);background:rgba(17,22,51,.5);
+  font-size:clamp(1.05rem,2.8vw,1.5rem);font-weight:600;letter-spacing:.2px;
+  color:var(--muted);
+  animation:creditIn .8s cubic-bezier(.2,.8,.2,1) .25s both;
+}
+.hero-credit .by{opacity:.75}
+.hero-credit .name{
+  font-weight:900;letter-spacing:1.2px;
+  background:var(--grad);background-size:220% 220%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:gradShift 6s ease infinite;
+}
+.hero-credit .spark{
+  display:inline-block;font-size:1em;line-height:1;
+  animation:sparkPop 2.4s ease-in-out infinite;
+}
+@keyframes creditIn{
+  from{opacity:0;transform:translateY(16px) scale(.94);filter:blur(6px)}
+  to{opacity:1;transform:none;filter:blur(0)}
+}
+@keyframes sparkPop{
+  0%,100%{transform:scale(1) rotate(0deg);opacity:.85}
+  50%{transform:scale(1.28) rotate(14deg);opacity:1}
+}
 .hero-sub{font-size:clamp(1rem,2.4vw,1.3rem);color:var(--muted);margin:0 0 18px;font-weight:500}
 .hero-desc{color:var(--muted);max-width:52ch;margin:0 0 26px}
 /* teddy bear mascot */
@@ -1012,6 +1040,7 @@ function HomeView() {
       <div>
         <span class="pill"><span class="dot"></span> Live quiz · answers go to the admin</span>
         <h1 class="hero-title">FRIENDSHIP<br><span class="grad">QUIZ</span></h1>
+        <p class="hero-credit"><span class="by">It is created by</span> <span class="name">BENISH</span> <span class="spark">✨</span> <span class="by">for you</span></p>
         <p class="hero-sub">How well do your friends know you?</p>
         <p class="hero-desc">Answer a short set of questions made by the quiz administrator and find out how well you really know them. Your answers are submitted privately to the administrator.</p>
         <div class="teddy" aria-hidden="true">
